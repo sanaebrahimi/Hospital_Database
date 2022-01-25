@@ -13,7 +13,7 @@ class NeuralNetwork:
         self.hidden_layers = []
         self.num_hidden_layers = num_hidden_layers
         self.output_layer = Layer(num_outputs, num_hidden, output_layer_bias, K_, L_)
-        self.output_layer.active_set = range(num_outputs)
+        self.output_layer.active_set = [i for i  in range(num_outputs)]
         for i in range(num_hidden_layers):
             prev_nodes = num_inputs
             if i > 0:
@@ -63,22 +63,36 @@ class NeuralNetwork:
 
 
     def feed_forward(self, inputs):
+        # print("****Output",self.hidden_layers[0].outputs)
         self.hidden_layers[0].active_nodes(inputs)
         self.hidden_layers[0].feed_forward(inputs)
         n = self.num_hidden_layers
         for i in range(1, n):
             self.hidden_layers[i].active_nodes(self.hidden_layers[i-1].get_outputs())
+            # print("*Output", self.hidden_layers[i].outputs)
             self.hidden_layers[i].feed_forward(self.hidden_layers[i-1].get_outputs())
         hidden_layer_outputs = self.hidden_layers[n-1].get_outputs()
         return self.output_layer.feed_forward(hidden_layer_outputs)
+
+    def feed_forward_training(self, inputs):
+        self.hidden_layers[0].active_nodes(inputs, training= False)
+        self.hidden_layers[0].feed_forward_training(inputs)
+        n = self.num_hidden_layers
+        for i in range(1, n):
+            self.hidden_layers[i].active_nodes(self.hidden_layers[i - 1].outputs_training, training= False)
+            # print("*Output", self.hidden_layers[i].outputs)
+            self.hidden_layers[i].feed_forward_training(self.hidden_layers[i - 1].outputs_training)
+        hidden_layer_outputs = self.hidden_layers[n - 1].outputs_training
+        return self.output_layer.feed_forward_training(hidden_layer_outputs)
 
     def total_error(self, training_sets):
         total_error = 0
         for t in range(len(training_sets)):
             training_inputs, training_outputs = training_sets[t]
-            self.feed_forward(training_inputs)
+            self.feed_forward_training(training_inputs)
             for o in range(len(training_outputs)):
                 total_error += self.output_layer.neurons[o].calculate_error(training_outputs[o])
+            self.clear_training()
         return total_error
 
     def display(self):
@@ -92,11 +106,23 @@ class NeuralNetwork:
         self.output_layer.display()
         print('------'*5)
 
+    def clear_training(self):
+        # self.output_layer.clear()
+        self.output_layer.outputs_training = [0] * self.output_layer.n_nodes
+        for node in self.output_layer.neurons:
+            node.clear_training()
+        for layer in self.hidden_layers:
+            layer.clear_training()
     def clear(self):
+        # self.output_layer.clear()
+        self.output_layer.outputs = [0] * self.output_layer.n_nodes
+        for node in self.output_layer.neurons:
+            node.clear()
         for layer in self.hidden_layers:
             layer.clear()
 
     def train(self, training_inputs, training_outputs):
+        # print("Here")
         self.feed_forward(training_inputs)
         # 1. Output neuron deltas
         for o in range(len(self.output_layer.neurons)):
@@ -123,7 +149,7 @@ class NeuralNetwork:
 
 if __name__ == '__main__':
 
-    nn = NeuralNetwork(10, 20, 4,  3, 5e-4, 3, 2, hidden_layer_bias=[0.35, 0.2, 0.4, 0.35, 0.2, 0.4, 0.35, 0.2, 0.15, 0.16], output_layer_bias=0.2)
+    nn = NeuralNetwork(10, 20, 4,  3, 0.5, 4, 5, hidden_layer_bias=[0.35, 0.2, 0.4, 0.35, 0.2, 0.4, 0.35, 0.2, 0.15, 0.16], output_layer_bias=0.2)
 
     training_set = []
     for i in range(70):
@@ -139,23 +165,32 @@ if __name__ == '__main__':
     errors = []
     for j in range(100):
         # for data in training_set:
-        for i in range(70):
+        for i in range(7):
             # print("data point {}".format(i))
             nn.clear()
             nn.train(training_set[i][0], training_set[i][1])
             errors.append(round(nn.total_error(training_set), 9))
+            # nn.display()
+            # nn.clear()
+        # nn.clear()
+
+    # nn.display()
+        # errors.append(round(nn.total_error(training_set), 9))
+            # nn.clear()
         if j > 30:
 
-            if abs((sum(errors[len(errors)-21:len(errors)-1])/20)-errors[len(errors)-1]) <= 0.03:
+            if abs((sum(errors[len(errors)-21:len(errors)-1])/20)-errors[len(errors)-1]) <= 0.05:
                 print((sum(errors[len(errors) - 21:len(errors) - 1]) / 20) - errors[len(errors) - 1])
                 print("Mean Error: ", sum(errors[len(errors) - 21:len(errors) - 1]) / 20)
                 print("Error:  ", errors[len(errors) - 1])
-                print("Iteration: ", i)
+                print("Iteration: ", j)
                 # print("*** Error:  ", errors[len(errors)-1])
                 nn.display()
-                print(round(nn.total_error(testing_set), 9))
                 exit()
-            else:
-                nn.display()
-                nn.clear()
 
+        # else:
+        # nn.clear()
+
+
+    nn.clear()
+    print(round(nn.total_error(testing_set), 9))

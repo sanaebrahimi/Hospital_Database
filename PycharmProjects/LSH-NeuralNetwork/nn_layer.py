@@ -12,8 +12,10 @@ class Layer:
         for i in range(num_neurons):
             self.neurons.append(Neuron(self.bias))
         self.outputs = [0] * num_neurons
+        self.outputs_training = [0] * num_neurons
         self.n_nodes = num_neurons
         self.active_set = []
+        self.active_set_training = []
         self.n_prev_layer_node = prev_layer_node
         if hidden_:
             # d = num_neurons
@@ -28,19 +30,30 @@ class Layer:
 
 
 
-    def active_nodes(self, input):
-        self.active_set = self.lsh.query(input)
+    def active_nodes(self, input, training = True):
+        if training:
+            self.active_set = self.lsh.query(input)
+        else:
+            self.active_set_training = self.lsh.query(input)
 
         # return self.active_set
 
     def feed_forward(self, input):
+        # print(self.active_set)
+        # print(self.outputs)
         for node in self.active_set:
+            # print(node)
             self.outputs[node] = self.neurons[node].neuron_output(input)
+        # print(self.outputs)
 
     def get_outputs(self):
-        for n in range(self.n_nodes):
-            self.outputs[n] = self.neurons[n].output
+        # for n in range(self.n_nodes):
+        #     self.outputs[n] = self.neurons[n].output
         return self.outputs
+
+    def feed_forward_training(self, input):
+        for node in self.active_set_training:
+            self.outputs_training[node] = self.neurons[node].neuron_output_training(input)
 
     def backpropagation(self, next_layer):
         for curr_node in self.active_set:
@@ -62,9 +75,15 @@ class Layer:
 
     def clear(self):
         self.outputs = [0] * self.n_nodes
-        for node in self.active_set:
-            self.neurons[node].clear()
+        for node in self.neurons:
+            node.clear()
         self.active_set = []
+
+    def clear_training(self):
+        self.outputs_training = [0] * self.n_nodes
+        for node in self.neurons:
+            node.clear_training()
+        self.active_set_training = []
 
     def display(self):
         print('Neurons:', len(self.neurons))

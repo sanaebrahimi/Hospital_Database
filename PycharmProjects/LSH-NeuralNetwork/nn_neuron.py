@@ -8,16 +8,24 @@ class Neuron:
         self.delta = 0
         self.inputs = []
         self.output = 0
+        self.input_training = []
+        self.output_training = 0
 
     def neuron_output(self, inputs):
         self.inputs = inputs
-        self.output = self.net_output(self.total_net_input())
+        self.output = self.net_output(self.total_net_input(inputs))
         return self.output
 
-    def total_net_input(self):
+
+    def neuron_output_training(self, inputs):
+        self.input_training = inputs
+        self.output_training = self.net_output(self.total_net_input(inputs))
+        return self.output_training
+
+    def total_net_input(self, input):
         total = 0
-        for i in range(len(self.inputs)):
-            total += self.inputs[i] * self.weights[i]
+        for i in range(len(input)):
+            total += input[i] * self.weights[i]
         return total + self.bias
 
     # Apply the logistic function to calculate the output of the neuron
@@ -66,6 +74,10 @@ class Neuron:
         self.output = 0
         self.inputs = []
         self.delta = 0
+
+    def clear_training(self):
+        self.output_training = 0
+        self.input_training = []
 
     def display(self):
         print('  Input:', self.inputs)
