@@ -8,6 +8,7 @@ class Neuron:
         self.delta = 0
         self.inputs = []
         self.output = 0
+
     def neuron_output(self, inputs):
         self.inputs = inputs
         self.output = self.net_output(self.total_net_input())
@@ -23,12 +24,7 @@ class Neuron:
     def net_output(self, total_net_input):
         return 1 / (1 + math.exp(-total_net_input))
 
-    # Now that we have the partial derivative of the error with respect to the output (∂E/∂yⱼ) and
-    # the derivative of the output with respect to the total net input (dyⱼ/dzⱼ) we can calculate
-    # the partial derivative of the error with respect to the total net input.
-    # This value is also known as the delta
     # delta = ∂E/∂zⱼ = ∂E/∂yⱼ * dyⱼ/dzⱼ
-
     def pd_error_wrt_total_net_input(self, target_output):
         self.delta = round((self.pd_error_wrt_output(target_output) * self.pd_total_net_input_wrt_input()), 4)
 
@@ -47,7 +43,7 @@ class Neuron:
 
     # using logistic function to calculate the neuron's output:
     # yⱼ = 1 / (1 + e^(-zⱼ))
-    # The derivative (not partial derivative since there is only one variable) of the output then is:
+    # The derivative of the output then is:
     # dyⱼ/dzⱼ = yⱼ * (1 - yⱼ)
     def pd_total_net_input_wrt_input(self):
         return self.output * (1 - self.output)
