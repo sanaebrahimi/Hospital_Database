@@ -27,24 +27,6 @@ class LSH:
         fp = self.func.hashSignature(item)
         self.hash_buckets.insert(fp, item_id)
 
-
-
-    # def insert_multi(self, items, N):
-    #     fp = self.func.hash(items).int().cpu().numpy()
-    #     self.lsh_.insert_multi(fp, N)
-
-    # def query_remove_matrix(self, items, labels, total_size):
-    #     # for each data sample, query lsh data structure, remove accidental hit
-    #     # find maximum number of samples
-    #     # create matrix and pad appropriately
-    #     batch_size, D = items.size()
-    #     fp = self.func.hash(items).int().cpu().numpy()
-    #     result, total_count = self.lsh_.query_matrix(fp, labels.cpu().numpy(), batch_size, total_size)
-    #     batch_size, ssize = result.shape
-    #     self.sample_size += total_count
-    #     self.count += batch_size
-    #     return result
-
     def query_remove(self, item, label):
         fp = self.func.hashSignature(item)
         result = self.hash_buckets.query(np.squeeze(fp))
@@ -60,11 +42,6 @@ class LSH:
         self.sample_size += len(result)
         self.count += 1
         return result
-
-    # def query_multi(self, items, N):
-    #     fp = self.func.hash(items).int().cpu().numpy()
-    #     return list(self.lsh_.query_multi(fp, N))
-
     def clear(self):
         self.hash_buckets.clear()
 
