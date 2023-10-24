@@ -9,7 +9,6 @@ class DataBaseManagement:
         self.conn = sqlite3.connect(path)
         self.cur = self.conn.cursor()
         self.cur.executescript("""
-            test
             CREATE TABLE IF NOT EXISTS LogIn(
                 username INTEGER PRIMARY KEY AUTOINCREMENT,
                 email_address NVARCHAR(320),
