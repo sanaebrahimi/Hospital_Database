@@ -11,8 +11,8 @@ class DataBaseManagement:
         self.cur.executescript("""
             DROP TABLE LogIn;
             CREATE TABLE IF NOT EXISTS LogIn(
-                username INTEGER NOT NULL,
-                email_address NVARCHAR(320) PRIMARY KEY,
+                username INTEGER PRIMARY KEY AUTOINCREMENT,
+                email_address NVARCHAR(320),
                 password CHAR(60) NOT NULL DEFAULT '',
                 user_type text
             );
