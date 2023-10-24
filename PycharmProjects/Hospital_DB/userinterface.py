@@ -11,14 +11,14 @@ type = ''
 
 def login():
     try:
-        login = bs.User(e1.get(), e2.get(), e3.get(),type)
+        login = bs.User(e2.get(), e3.get(),type)
         login_status = login.get_user()
         print(login_status)
     except IndexError:
         mb.showerror(" Enter you login credential")
 def signup():
     try:
-        signup = bs.User(e1.get(), e2.get(), e3.get(),type)
+        signup = bs.User(e2.get(), e3.get(),type)
         login_status = signup.insert()
         print(login_status)
     except IndexError:

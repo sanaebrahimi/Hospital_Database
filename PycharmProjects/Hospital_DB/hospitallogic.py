@@ -11,9 +11,9 @@ from tkinter import messagebox as mb
 
 class User:
 
-    def __init__(self, username, email, password, type):
+    def __init__(self, email, password, type):
 
-        self.username = username
+        # self.username = username
         self.email = email
         self.user_type = type
         self.password = password
@@ -23,13 +23,13 @@ class User:
     def __str__(self):
         if self.user_type == "patient":
             user = my_db.show(f"""
-                                SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.username = "{self.username}"
+                                SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.username = LogIn.username
                                 """).pop()[0]
         if self.user_type == "nurse":
             user = my_db.show(f"""
-                                SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = "{self.username}"
+                                SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = LogIn.username
                                 """).pop()[0]
-        return self.username
+        return user
 
     # inserting a query into the database
     def make_password_hash(self):
@@ -42,8 +42,8 @@ class User:
     def insert(self):
         check_user_existance = False
         try:
-            my_db.insert(f"""INSERT INTO LogIn (username, email_address, password, user_type) VALUES \
-                                        ("{self.username}", "{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
+            my_db.insert(f"""INSERT INTO LogIn (email_address, password, user_type) VALUES \
+                                        ("{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
 
         except IndexError:
             check_user_existance = False
@@ -56,11 +56,11 @@ class User:
         else:
             if self.user_type == "patient":
                 user = my_db.show(f"""
-                                    SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.RegistrationID  = {self.username}
+                                    SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.RegistrationID  = LogIn.username
                                     """).pop()[0]
             if self.user_type == "nurse":
                 user = my_db.show(f"""
-                                    SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = {self.username}
+                                    SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = LogIn.username
                                     """).pop()[0]
 
         return check_user_existance
@@ -71,7 +71,7 @@ class User:
             if self.is_password_valid():
                 user = my_db.show(f"""
                             SELECT * FROM LogIn WHERE email_address="{self.email}"\
-                                    AND password= "{self.hashed_pw}" AND username = {self.username} AND user_type ="{self.user_type} """)
+                                    AND password= "{self.hashed_pw}" AND username = LogIn.username AND user_type ="{self.user_type} """)
             else:
                 mb.showerror("Credential not valid !")
         except:
