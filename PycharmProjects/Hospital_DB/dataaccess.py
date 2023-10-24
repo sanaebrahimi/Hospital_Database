@@ -9,12 +9,14 @@ class DataBaseManagement:
         self.conn = sqlite3.connect(path)
         self.cur = self.conn.cursor()
         self.cur.executescript("""
+            
             CREATE TABLE IF NOT EXISTS LogIn(
                 username INTEGER PRIMARY KEY AUTOINCREMENT,
                 email_address NVARCHAR(320),
                 password CHAR(60) NOT NULL DEFAULT '',
                 user_type text
             );
+
             CREATE TABLE IF NOT EXISTS Patient(
 
                 SSN integer primary key,

@@ -42,8 +42,11 @@ class User:
     def insert(self):
         check_user_existance = False
         try:
+            # print(my_db.show((f"""
+            #                         SELECT * FROM LogIn
+            #                         """)))
             my_db.insert(f"""INSERT INTO LogIn (email_address, password, user_type) VALUES \
-                                        ("{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
+                                        ("{self.email}", "{self.hashed_pw}", "{self.user_type}");""")
 
         except IndexError:
             check_user_existance = False
