@@ -7,82 +7,76 @@ my_db = da.DataBaseManagement('three_layered_db.db')
 import tkinter as tk
 import bcrypt
 import sqlite3
+from tkinter import messagebox as mb
 
-class User():
-    def __init__(self, username, email, password):
-        # self.password_var = tk.StringVar()
-        # password_entry = tk.Entry(root, textvariable=self.password_var)
-        # password_entry.pack()
-        #
-        # password = self.password_var.get()
+class User:
+
+    def __init__(self, username, email, password, type):
+
         self.username = username
         self.email = email
-        hashable_pw = bytes(password, encoding='utf-8')
-        self.hashed_pw = bcrypt.hashpw(hashable_pw, bcrypt.gensalt())
+        self.user_type = type
+        self.password = password
+        self.hashed_pw = self.make_password_hash()
         print(self.hashed_pw)
 
-    def insert(self):
-        my_db.insert(f"INSERT INTO LogIn (username, email_address, password) VALUES({self.username}, {self.email}, {self.hashed_pw})")
-
-
-
-
-# Product class
-# initialize a class with customer profile and name of the product
-class Product:
-    basket_id = 1
-
-    def __init__(self, first_name, last_name, product_name):
-        self.first_name, self.last_name, self.product_name = first_name, last_name, product_name
-
     def __str__(self):
-        return self.first_name + ' ' + self.last_name + ' ' + self.product_name
+        if self.user_type == "patient":
+            user = my_db.show(f"""
+                                SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.username = "{self.username}"
+                                """).pop()[0]
+        if self.user_type == "nurse":
+            user = my_db.show(f"""
+                                SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = "{self.username}"
+                                """).pop()[0]
+        return self.username
 
     # inserting a query into the database
+    def make_password_hash(self):
+        hash = bcrypt.hashpw(password= self.password.encode('utf-8'), salt=bcrypt.gensalt())
+        return hash.decode('utf-8')
+
+    def is_password_valid(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+
     def insert(self):
-        check_customer_existance = True
+        check_user_existance = False
         try:
-            customer_id = my_db.show(f"""
-                    SELECT c.CustomerId FROM Customer as c WHERE CustomerFirstName="{self.first_name}"\
-                            AND CustomerLastName="{self.last_name}"
-                    """).pop()[0]
+            my_db.insert(f"""INSERT INTO LogIn (username, email_address, password, user_type) VALUES \
+                                        ("{self.username}", "{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
+
         except IndexError:
-            check_customer_existance = False
+            check_user_existance = False
 
-        product_id = my_db.show(f"""
-                                SELECT p.ProductId FROM Product as p WHERE ProductName="{self.product_name}"
-                        """).pop()[0]
+        # if check_user_existance:
+        #     my_db.insert(f"""INSERT INTO LogIn (username, email_address, password, user_type) VALUES \
+        #                     ("{self.username}", "{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
 
-        price = my_db.show(f"""
-                        SELECT pp.ProductPrice FROM Product_Price as pp INNER JOIN Product as p ON pp.ProductId=p.ProductId 
-                        WHERE ProductName="{self.product_name}"
-                """).pop()[0]
-
-        if not check_customer_existance:
-            my_db.insert(f"""INSERT INTO Customer (CustomerFirstName, CustomerLastName) VALUES \
-                            ("{self.first_name}", "{self.last_name}")""")
-
-            customer_id = my_db.show(f"""
-                    SELECT c.CustomerId FROM Customer as c WHERE CustomerFirstName="{self.first_name}"\
-                            AND CustomerLastName="{self.last_name}"
-                    """).pop()[0]
-
-            my_db.insert(f"""INSERT INTO Basket (CustomerId, OrderDate, SumPrice) VALUES \
-                        ({customer_id}, date('now'), {price} \
-                            )""")
-
-            my_db.insert(
-                f"""INSERT INTO Basket_Product (BasketId, ProductId) VALUES ({Product.basket_id}, {product_id})""")
-            Product.basket_id += 1
 
         else:
-            my_db.insert(f"""INSERT INTO Basket (CustomerId, OrderDate, SumPrice) VALUES \
-            ({customer_id}, date('now'), {price} \
-                )""")
+            if self.user_type == "patient":
+                user = my_db.show(f"""
+                                    SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.RegistrationID  = {self.username}
+                                    """).pop()[0]
+            if self.user_type == "nurse":
+                user = my_db.show(f"""
+                                    SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = {self.username}
+                                    """).pop()[0]
 
-            my_db.insert(
-                f"""INSERT INTO Basket_Product (BasketId, ProductId) VALUES ({Product.basket_id}, {product_id})""")
-            Product.basket_id += 1
+        return check_user_existance
+
+    def get_user(self):
+
+        try:
+            if self.is_password_valid():
+                user = my_db.show(f"""
+                            SELECT * FROM LogIn WHERE email_address="{self.email}"\
+                                    AND password= "{self.hashed_pw}" AND username = {self.username} AND user_type ="{self.user_type} """)
+            else:
+                mb.showerror("Credential not valid !")
+        except:
+            mb.showerror("User not found!")
+        return user
 
     # showing the queries inserted by the user
     @staticmethod
