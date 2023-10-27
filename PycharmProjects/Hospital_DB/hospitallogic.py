@@ -3,12 +3,11 @@ import dataaccess as da
 
 # connecting to the database
 my_db = da.DataBaseManagement('three_layered_db.db')
-
 import tkinter as tk
 import bcrypt
 import sqlite3
 from tkinter import messagebox as mb
-
+# secret_key = bcrypt.gensalt(12)
 class User:
 
     def __init__(self, email, password, type):
@@ -18,42 +17,38 @@ class User:
         self.user_type = type
         self.password = password
         self.hashed_pw = self.make_password_hash()
-        print(self.hashed_pw)
 
     def __str__(self):
+        user = []
         if self.user_type == "patient":
             user = my_db.show(f"""
                                 SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.username = LogIn.username
                                 """).pop()[0]
+
         if self.user_type == "nurse":
             user = my_db.show(f"""
                                 SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = LogIn.username
                                 """).pop()[0]
-        return user
+        return user[0] + user[1]
 
     # inserting a query into the database
     def make_password_hash(self):
         hash = bcrypt.hashpw(password= self.password.encode('utf-8'), salt=bcrypt.gensalt())
         return hash.decode('utf-8')
 
-    def is_password_valid(self, password):
-        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+    def is_password_valid(self, hash, password):
+        print(password.encode('utf-8'))
+        pas = bcrypt.checkpw(password.encode('utf-8'), hash)
+
+        return pas
 
     def insert(self):
-        check_user_existance = False
+        print("Signing up...")
         try:
             my_db.insert(f"""INSERT INTO LogIn (email_address, password, user_type) VALUES \
-                                        ("{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
+                                        ("{self.email}", "{self.hashed_pw}", "{self.user_type}");""")
 
         except IndexError:
-            check_user_existance = False
-
-        # if check_user_existance:
-        #     my_db.insert(f"""INSERT INTO LogIn (username, email_address, password, user_type) VALUES \
-        #                     ("{self.username}", "{self.email}", "{self.hashed_pw}", "{self.user_type}")""")
-
-
-        else:
             if self.user_type == "patient":
                 user = my_db.show(f"""
                                     SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.RegistrationID  = LogIn.username
@@ -62,21 +57,6 @@ class User:
                 user = my_db.show(f"""
                                     SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = LogIn.username
                                     """).pop()[0]
-
-        return check_user_existance
-
-    def get_user(self):
-
-        try:
-            if self.is_password_valid():
-                user = my_db.show(f"""
-                            SELECT * FROM LogIn WHERE email_address="{self.email}"\
-                                    AND password= "{self.hashed_pw}" AND username = LogIn.username AND user_type ="{self.user_type} """)
-            else:
-                mb.showerror("Credential not valid !")
-        except:
-            mb.showerror("User not found!")
-        return user
 
     # showing the queries inserted by the user
     @staticmethod
@@ -99,3 +79,31 @@ class User:
             pp.ProductId=p.ProductId WHERE c.CustomerFirstName="{fullname[0]}" AND c.CustomerLastName="{fullname[1]}"
             """)
         return q
+
+def get_user( email, user_type):
+
+    try:
+
+            # if self.is_password_valid():
+                # print(my_db.show(f"""
+                #             SELECT * FROM LogIn WHERE email_address="{self.email}" AND user_type ="{self.user_type} " """))
+            # password = '9i2309180943'
+            # bytes = password.encode('utf-8')
+            # salt = bcrypt.gensalt()
+            # hash = bcrypt.hashpw(bytes, salt)
+            # userPassword = '9i2309180943'
+            # result = bcrypt.checkpw(userPassword.encode('utf-8'), hash)
+            # print(result)
+
+        user = my_db.show(f""" SELECT * FROM LogIn WHERE email_address="{email}" AND user_type ="{user_type}" """)
+        print(my_db.show(f""" SELECT * FROM LogIn """))
+            # if self.is_password_valid(user[0][2], password):
+            #     print(self.user_type)
+        return user
+
+            # else:
+            #     mb.showerror("Password not valid!")
+            #     return None
+
+    except:
+        print("Error Occured!")
