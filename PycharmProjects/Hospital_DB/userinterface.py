@@ -97,7 +97,7 @@ Button3 = ttk.Checkbutton(master, text="Admin", variable = Checkbutton3, command
 Button3.grid(row=0, column=19)
 button = ttk.Button(master, text='Submit', width=18, command=login)
 button.grid(row=2, column=18)
-button = ttk.Button(master, text='Sign Up', width=18, command=signup())
+button = ttk.Button(master, text='Sign Up', width=18, command=signup)
 button.grid(row=1, column=18)
 
 tkinter.mainloop()
