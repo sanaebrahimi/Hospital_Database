@@ -1,6 +1,9 @@
 # graphical user interface
 import tkinter
 from tkinter import ttk
+
+import bcrypt
+
 import hospitallogic as bs
 import time
 from ttkthemes import themed_tk as tk
@@ -11,16 +14,34 @@ type = ''
 
 def login():
     try:
-        login = bs.User(e2.get(), e3.get(),type)
-        login_status = login.get_user()
-        print(login_status)
+        user = bs.get_user(e2.get(), type)
+        paswd = e3.get()
+        login_status = bcrypt.checkpw(paswd.encode('utf-8'), user[0][2].encode('utf-8'))
+
+        if login_status:
+            print("Logging in...")
+            master.destroy()
+            window2_main = tk.ThemedTk()
+            window2_main.get_themes()
+            window2_main.set_theme('arc')
+            window2_main.geometry("800x500")
+            window2_main.title("User Portal")
+            ttk.Label(window2_main, text="Bye Bye").pack()
+            window2_main.mainloop()
+        else:
+            print("User not found!")
     except IndexError:
-        mb.showerror(" Enter you login credential")
+        print("Enter you login credential")
 def signup():
     try:
-        signup = bs.User(e2.get(), e3.get(),type)
-        login_status = signup.insert()
-        print(login_status)
+        user = bs.get_user(e2.get(), type)
+        paswd = e3.get()
+        check_user_existence = bcrypt.checkpw(paswd.encode('utf-8'), user[0][2].encode('utf-8'))
+        if check_user_existence:
+            print('A user with this credential already exists!')
+        else:
+            signup = bs.User(e2.get(), e3.get(),type)
+            signup = signup.insert()
     except IndexError:
         mb.showerror(" Enter you login credential")
 
@@ -64,24 +85,24 @@ def purchase_history():
 master = tk.ThemedTk()
 master.get_themes()
 master.set_theme('arc')
+master.title("Hospital Portal")
+master.geometry("800x500")
 # master.
 
 # Labels
-ttk.Label(master, text='Username').grid(row=0, column=2)
-ttk.Label(master, text='Email').grid(row=1, column=2)
-ttk.Label(master, text='Password').grid(row=2, column=2)
-# ttk.Label(master, text='User Type').grid(row=0, column=17)
+ttk.Label(master, text='Email').place(relx = 0.3, rely = 0.5)
+ttk.Label(master, text='Password').place(relx = 0.3, rely = 0.6)
 
 # Inputs
-e1 = ttk.Entry(master)
+# e1 = ttk.Entry(master)
 e2 = ttk.Entry(master)
 e3 = ttk.Entry(master)
-# e4 = ttk.Entry(master)
 
-e1.grid(row=0, column=3, padx=2)
-e2.grid(row=1, column=3, padx=2)
-e3.grid(row=2, column=3, padx=2)
-# e4.grid(row=0, column=18, padx=2)
+e2.grid(row=10, column=8, padx=2)
+e2.place(relx = 0.42, rely = 0.5)
+
+e3.grid(row=11, column=8, padx=2)
+e3.place(relx = 0.42, rely = 0.6)
 
 # Buttons
 
@@ -90,14 +111,14 @@ Checkbutton2 = tkinter.IntVar()
 Checkbutton3 = tkinter.IntVar()
 
 Button1 = ttk.Checkbutton(master, text="Nurse", variable = Checkbutton1, command = set_user_type)
-Button1.grid(row=0, column=17)
+Button1.place(relx = 0.5, rely = 0.65)
 Button2 = ttk.Checkbutton(master, text="Patient", variable = Checkbutton2, command = set_user_type)
-Button2.grid(row=0, column=18)
+Button2.place(relx = 0.4, rely = 0.65)
 Button3 = ttk.Checkbutton(master, text="Admin", variable = Checkbutton3, command = set_user_type)
-Button3.grid(row=0, column=19)
+Button3.place(relx = 0.6, rely = 0.65)
 button = ttk.Button(master, text='Submit', width=18, command=login)
-button.grid(row=2, column=18)
+button.place(relx = 0.42, rely = 0.7)
 button = ttk.Button(master, text='Sign Up', width=18, command=signup)
-button.grid(row=1, column=18)
+button.place(relx = 0.42, rely = 0.75)
 
 tkinter.mainloop()
