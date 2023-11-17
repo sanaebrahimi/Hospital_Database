@@ -12,7 +12,7 @@ class DataBaseManagement:
          
             CREATE TABLE IF NOT EXISTS LogIn(
                 username INTEGER PRIMARY KEY AUTOINCREMENT,
-                email_address NVARCHAR(320),
+                email_address NVARCHAR(320) NOT NULL,
                 password CHAR(60) NOT NULL DEFAULT '',
                 user_type text
             );
