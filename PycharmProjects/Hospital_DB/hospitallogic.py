@@ -42,7 +42,7 @@ class User:
 
         return pas
 
-    def insert(self):
+    def insert(self, query=None):
         print("Signing up...")
         try:
             my_db.insert(f"""INSERT INTO LogIn (email_address, password, user_type) VALUES \
@@ -51,23 +51,25 @@ class User:
         except IndexError:
             if self.user_type == "patient":
                 user = my_db.show(f"""
-                                    SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.RegistrationID  = LogIn.username
+                                    SELECT FirstName, LastName FROM LogIn, Patient WHERE Patient.RegistrationID  = LogIn.email_address
                                     """).pop()[0]
+                if query:
+                    my_db.insert(query)
+
+
             if self.user_type == "nurse":
                 user = my_db.show(f"""
-                                    SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = LogIn.username
+                                    SELECT FirstName, LastName FROM LogIn, Nurse WHERE Nurse.username = LogIn.email_address
                                     """).pop()[0]
+                if query:
+                    my_db.insert(query)
 
     # showing the queries inserted by the user
-    @staticmethod
-    def show():
-        q = my_db.show(f"""
-                SELECT c.CustomerFirstName, c.CustomerLastName, p.ProductName, pp.ProductPrice FROM Customer as c \
-                INNER JOIN Basket as b ON c.CustomerId=b.CustomerId INNER JOIN Basket_Product as bp ON b.BasketId=bp.BasketId 
-                INNER JOIN Product as p ON p.ProductId = bp.ProductId INNER JOIN Product_Price as pp ON 
-                pp.ProductId=p.ProductId;
-            """)
 
+    def show(self, query):
+        print(my_db.show(f""" SELECT * FROM Nurse """))
+        q = my_db.show(query)
+        print(q)
         return q
 
     # showing what are the products a customer has bought
@@ -80,30 +82,15 @@ class User:
             """)
         return q
 
-def get_user( email, user_type):
+def get_user(email, user_type):
 
     try:
 
-            # if self.is_password_valid():
-                # print(my_db.show(f"""
-                #             SELECT * FROM LogIn WHERE email_address="{self.email}" AND user_type ="{self.user_type} " """))
-            # password = '9i2309180943'
-            # bytes = password.encode('utf-8')
-            # salt = bcrypt.gensalt()
-            # hash = bcrypt.hashpw(bytes, salt)
-            # userPassword = '9i2309180943'
-            # result = bcrypt.checkpw(userPassword.encode('utf-8'), hash)
-            # print(result)
-
         user = my_db.show(f""" SELECT * FROM LogIn WHERE email_address="{email}" AND user_type ="{user_type}" """)
         print(my_db.show(f""" SELECT * FROM LogIn """))
-            # if self.is_password_valid(user[0][2], password):
-            #     print(self.user_type)
+
         return user
 
-            # else:
-            #     mb.showerror("Password not valid!")
-            #     return None
 
     except:
         print("Error Occured!")
