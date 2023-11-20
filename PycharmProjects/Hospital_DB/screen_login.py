@@ -7,7 +7,7 @@ from tkinter import messagebox
 import bcrypt
 from nurse import Nurse
 import hospitallogic
-
+from patient import Patient
 
 class ScreenLogin:
     def __init__(self, master: themed_tk.ThemedTk, change_screen_func: Callable[[str], None]):
@@ -56,10 +56,12 @@ class ScreenLogin:
             # self.master.destroy()
             if user_type == "Patient":
                 self.change_screen("home_patient")
-
+                user = hospitallogic.get_user(email, user_type)
+                if len(user) > 0:
+                    patient = Patient(self.master, email)
+                    patient.show()
             if user_type == "Nurse":
                 self.change_screen("home_nurse")
-
                 user = hospitallogic.get_user(email, user_type)
                 if len(user) > 0:
                     nurse = Nurse(self.master, email)
@@ -70,8 +72,8 @@ class ScreenLogin:
                     else:
                         nurse.show()
 
-                # else:
-                #     messagebox.showerror(message="Enter your information")
+                else:
+                    messagebox.showerror(message="Enter your information")
             if user_type == "Admin":
                 self.change_screen("home_admin")
             else:
@@ -114,6 +116,7 @@ class ScreenLogin:
 
             if user_type == "Patient":
                 self.change_screen("home_patient")
+                patient = Patient(self.master, email).show()
 
             if user_type == "Nurse":
                 self.change_screen("home_nurse")
