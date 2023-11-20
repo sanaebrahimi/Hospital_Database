@@ -3,13 +3,15 @@ import sqlite3
 
 
 # DataBaseManagement class to insert queries into and select from database
-
+# drop table Patient;
+# drop table LogIn;
 class DataBaseManagement:
     def __init__(self, path):
         self.conn = sqlite3.connect(path)
         self.cur = self.conn.cursor()
         self.cur.executescript("""
-    
+        
+            
             CREATE TABLE IF NOT EXISTS LogIn(
                 email_address NVARCHAR(320) PRIMARY KEY,
                 password CHAR(60) NOT NULL DEFAULT '',
@@ -17,16 +19,19 @@ class DataBaseManagement:
             );
 
             CREATE TABLE IF NOT EXISTS Patient(
-                SSN integer primary key,
+                SSN integer,
+                username NVARCHAR(320),
                 RegistrationID NVARCHAR(320),
                 FirstName text,
                 LastName text,
                 age integer,
                 gender char(6),
+                Race text,
                 Occupation text,
                 Address text,
                 Phone integer,
                 MedicalHistory text,
+                PRIMARY KEY(username),
                 FOREIGN KEY(RegistrationID) REFERENCES LogIn(email_address)     
             );
 
