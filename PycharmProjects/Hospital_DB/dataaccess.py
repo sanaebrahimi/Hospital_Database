@@ -9,26 +9,25 @@ class DataBaseManagement:
         self.conn = sqlite3.connect(path)
         self.cur = self.conn.cursor()
         self.cur.executescript("""
-         
             CREATE TABLE IF NOT EXISTS LogIn(
-                username INTEGER PRIMARY KEY AUTOINCREMENT,
-                email_address NVARCHAR(320) NOT NULL,
-                password CHAR(60) NOT NULL DEFAULT '',
-                user_type text
+                user_id INTEGER PRIMARY KEY,
+                email_address TEXT NOT NULL,
+                password TEXT NOT NULL,
+                user_type TEXT NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS Patient(
-
-                SSN integer primary key,
-                RegistrationID REFERENCES LogIn(username),
-                FirstName text,
-                LastName text,
-                age integer,
-                gender char(6),
-                Occupation text,
-                Address text,
-                Phone integer,
-                MedicalHistory text
+                patient_id INTEGER PRIMARY KEY,
+                ssn INTEGER NOT NULL UNIQUE,
+                user_id INTEGER NOT NULL,
+                firstname TEXT NOT NULL,
+                lastname TEXT NOT NULL,
+                age INTEGER NOT NULL,
+                gender TEXT NOT NULL,
+                occupation TEXT NOT NULL,
+                address TEXT NOT NULL,
+                phone INTEGER NOT NULL,
+                medical_history TEXT NOT NULL
                 
             );
 
@@ -58,7 +57,8 @@ class DataBaseManagement:
             );
 
         """)
-        self.cur.executescript("""
+
+        """self.cur.executescript(
 
             CREATE TABLE IF NOT EXISTS Customer (
 
@@ -106,7 +106,7 @@ class DataBaseManagement:
             INSERT INTO Product_Price (ProductId, ProductPrice) VALUES (3, 340000);
             INSERT INTO Product_Price (ProductId, ProductPrice) VALUES (4, 110000);
 
-        """)
+        )"""
 
     # insert into query
     def insert(self, query):
