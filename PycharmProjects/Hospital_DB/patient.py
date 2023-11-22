@@ -51,25 +51,27 @@ class Patient():
         ttk.Label(self.inner_frame, text='Age').grid(row=2, column=1, sticky='w')
         box4 = ttk.Entry(self.inner_frame, textvariable=self.age)
         box4.grid(row=3, column=1)
-        box4.insert(0, user[4])
+        box4.insert(0, user[5])
 
         self.gender = tk.StringVar()
         ttk.Label(self.inner_frame, text="Gender").grid(row=8, column=0, sticky='w')
         box5 = ttk.Combobox(self.inner_frame, state="readonly", values=["Male", "Female"], textvariable=self.gender)
         box5.grid(row=9, column=0)
-        # box5.insert(0, user[5])
+        curr = ["Male", "Female"].index(user[6])
+        box5.current(curr)
 
         self.race = tk.StringVar()
         ttk.Label(self.inner_frame, text="Race").grid(row=8, column=1, sticky='w')
-        box6 = ttk.Combobox(self.inner_frame, state="readonly", values=["Hispanic", "African American", "White"], textvariable=self.race)
+        box6 = ttk.Combobox(self.inner_frame, state="readonly", values=[" ","Hispanic", "African American", "White"], textvariable=self.race)
         box6.grid(row=9, column=1)
-        # box6.insert(0, user[6])
+        curr = ['',"Hispanic", "African American", "White"].index(user[7])
+        box6.current(curr)
 
         self.phone = tk.StringVar()
         ttk.Label(self.inner_frame, text="Phone Number").grid(row=10, column=0, sticky='w')
         box7 = ttk.Entry(self.inner_frame, textvariable= self.phone)
         box7.grid(row=11, column=0) #self.phone
-        box7.insert(0, user[7])
+        box7.insert(0, user[10])
 
         self.ssn = tk.StringVar()
         ttk.Label(self.inner_frame, text="SSN").grid(row=10, column=1, sticky='w')
@@ -102,8 +104,8 @@ class Patient():
 
             my_db.insert(f"""INSERT INTO Patient (SSN, username, RegistrationID, FirstName, LastName, age, gender, Race, Occupation, Address, 
                                    Phone, MedicalHistory) VALUES \
-                                                                ("{self.ssn}","{self.reg_id}", "{self.reg_id}", "{self.fname.get()}","{self.lname.get()}", "{self.age.get()}", \
-                                                                 "{self.gender.get()}", "{self.race.get()}", "{self.job.get()}", "{self.address.get()}", "{self.phone.get()}","{self.history.get()}" );""")
+                                                                ("{self.ssn}","{self.reg_id}", "{self.reg_id}", "{self.fname.get().strip()}","{self.lname.get().strip()}", "{self.age.get()}", \
+                                                                 "{self.gender.get()}", "{self.race.get()}", "{self.job.get().strip()}", "{self.address.get().strip()}", "{self.phone.get()}","{self.history.get().strip()}" );""")
         else:
             user = user[0]
             my_db.insert(f"""Update Patient 
@@ -121,21 +123,10 @@ class Patient():
 
     def show(self):
 
-        # patient = self.exist()
-        # if len(patient) == 0:
-        #     return None
-        # patient = patient.pop()
         inner_frame = tk.LabelFrame(self.master)
         inner_frame.pack(padx=10, pady=10)
-
-        # ttk.Label(inner_frame, text= patient[2] + " " + patient[3]).grid(row=0, column=0)
-        #
-        # ttk.Label(inner_frame, text=patient[4]).grid(row=1, column=0)
-        #
-        # ttk.Label(inner_frame, text=patient[5]).grid(row=2, column=0)
-        #
-        # ttk.Label(inner_frame, text=patient[6]).grid(row=3, column=0)
         user = [" " for i in range(12)]
+
         ttk.Button(inner_frame, text='Register', width=18, command = lambda: self.enter_info(user)).grid(row=4, column=0)  # command=self.login
         ttk.Button(inner_frame, text='Update Information', width=18, command = lambda: self.update_info() ).grid(row=5, column=0) #command=self.signup
         ttk.Button(inner_frame, text='Schedule Appointment', width=18).grid(row=6, column=0)  #command=self.signup
@@ -145,11 +136,9 @@ class Patient():
             widget.grid_configure(padx=50, pady=5)
 
     def update_info(self):
-        # SSN, username, RegistrationID, FirstName, LastName, age, gender, Occupation, Address,
-        # Phone, MedicalHistory
+
         user = self.exist()
         print(user)
-        # self.enter_info()
         if len(user) > 0:
             user = user[0]
         else:
@@ -158,6 +147,7 @@ class Patient():
 
     def exist(self):
         user = my_db.show(f""" SELECT * FROM Patient WHERE username ="{self.reg_id}" or RegistrationID = "{self.reg_id}" """)
+        print(my_db.show(f""" SELECT * FROM Patient"""))
         return user
 
 

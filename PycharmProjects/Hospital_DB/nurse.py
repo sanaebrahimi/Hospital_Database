@@ -3,6 +3,10 @@ from typing import Callable
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import themed_tk
+from tkinter import *
+from tkcalendar import Calendar
+from datetime import date
+from datetime import datetime
 from tkinter import messagebox
 import bcrypt
 import hospitallogic
@@ -59,10 +63,15 @@ class Nurse():
 
 
     def save(self):
+        user = self.exist()
+        user = user[0]
+        my_db.insert(f"""Update Patient 
+            SET 
+            Address = "{self.address.get()}", 
+            Phone = "{self.phone.get()}"
+            where  
+            EmployeeID  = "{user[0]}";""")
 
-        my_db.insert(f"""INSERT INTO Nurse (username, FirstName, LastName, Address, 
-                                   Phone, Age) VALUES \
-                                                                ("{self.email}", "{self.fname.get()}","{self.lname.get()}", "{self.address.get()}", "{self.phone.get()}", "{self.age.get()}");""")
         self.inner_frame.destroy()
         self.show()
 
@@ -84,7 +93,7 @@ class Nurse():
         ttk.Label(inner_frame, text=nurse[6]).grid(row=3, column=0)
 
         ttk.Button(inner_frame, text='Edit Information', width=18).grid(row=4, column=0)  # command=self.login
-        ttk.Button(inner_frame, text='Schedule Appointment', width=18 ).grid(row=5, column=0) #command=self.signup
+        ttk.Button(inner_frame, text='Schedule Appointment', width=18, command=lambda: self.scheduling(nurse[0])).grid(row=5, column=0) #command=self.signup
         ttk.Button(inner_frame, text='Cancel Appointment', width=18).grid(row=6, column=0)  #command=self.signup
         ttk.Button(inner_frame, text='View Schedule', width=18).grid(row=7, column=0) # command=self.signup
 
@@ -93,8 +102,39 @@ class Nurse():
 
         self.frame.destroy()
 
-    def exist(self):
+    def on_click(self, date, time_slot,user):
+
+        my_db.insert(f""" INSERT INTO NurseSchedule(EmployeeID, date, time)VALUES ("{user}", "{date}", "{time_slot}") """)
+        self.frame.destroy()
+        print(my_db.show(f""" select * from NurseSchedule"""))
+
+    def scheduling(self, employee_id):
+
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        time = tk.StringVar()
+        options = ("10-11 AM", "11-12 PM", "12-1 PM", "1-2 PM", "2-3 PM", "3-4 PM")
+        todays_date = date.today()
+        slot = ttk.OptionMenu(self.inner_frame, time,*options)
+        slot.config(width=25)
+        slot.pack(pady=20, padx=20)
+        cal = Calendar(self.inner_frame,  background="black", bordercolor="black",
+               headersbackground="white", normalbackground="white", foreground='black',
+               normalforeground='black', headersforeground='black', selectmode='day',
+                year=todays_date.year, month=todays_date.month, day=todays_date.day)
+
+        cal.config(background="black")
+        cal.pack(pady=20, padx=20)
+        b1 = ttk.Button(self.inner_frame, text="Submit", command=lambda: self.on_click(cal.get_date(), time.get(), employee_id)) #command=grad_date()
+        b1.pack(pady=20)
+
+        date1 = ttk.Label(self.inner_frame, text="")
+        date1.pack(pady=20)
+
+
+    def exist(self, email = None):
         user = my_db.show(f""" SELECT * FROM Nurse WHERE username ="{self.email}" """)
+        print(user)
         return user
 
 

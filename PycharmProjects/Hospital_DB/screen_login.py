@@ -1,5 +1,7 @@
+import datetime
 from typing import Callable
-
+import calendar
+from datetime import datetime
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import themed_tk
@@ -7,11 +9,15 @@ from tkinter import messagebox
 import bcrypt
 from nurse import Nurse
 import hospitallogic
+from hospitallogic import User
 from patient import Patient
-
+from admin import Admin
 class ScreenLogin:
     def __init__(self, master: themed_tk.ThemedTk, change_screen_func: Callable[[str], None]):
         self.master = master
+        admin = hospitallogic.get_user(email="admin2023@uic.edu", user_type="Admin")
+        if len(admin) == 0:
+            User(email="admin2023@uic.edu", password="09876", type="Admin").insert()
         self.change_screen = change_screen_func
         self.master.title('Hospital Portal Login')
 
@@ -41,6 +47,7 @@ class ScreenLogin:
 
 
     def login(self):
+        # now = datetime.now()
 
         email = self.email_var.get()
         password = self.password_var.get()
@@ -48,7 +55,7 @@ class ScreenLogin:
         user = hospitallogic.get_user(email, user_type)
         login_status = False
         if len(user) > 0:
-            login_status = bcrypt.checkpw(password.encode('utf-8'), user[0][1].encode('utf-8'))
+            login_status = bcrypt.checkpw(password.encode('utf-8'), user[0][2].encode('utf-8'))
 
         if login_status:
             print("Logging in...")
@@ -67,15 +74,17 @@ class ScreenLogin:
                     nurse = Nurse(self.master, email)
                     existence = nurse.exist()
                     if len(existence) == 0:
-                        self.change_screen("home_nurse")
-                        nurse = nurse.enter_info()
+                        messagebox.showerror(message="Nurse is not registered")
                     else:
-                        nurse.show()
 
+                        self.change_screen("home_nurse")
+                        nurse = nurse.show()
                 else:
-                    messagebox.showerror(message="Enter your information")
+                    messagebox.showerror(message="Sign Up First!")
             if user_type == "Admin":
                 self.change_screen("home_admin")
+                Admin(self.master, password)
+
             else:
                 # this case should never be true
                 pass
@@ -104,7 +113,7 @@ class ScreenLogin:
         user = hospitallogic.get_user(email, user_type)
         check_user_existence = False
         if len(user) > 0:
-            check_user_existence = bcrypt.checkpw(password.encode('utf-8'), user[0][1].encode('utf-8'))
+            check_user_existence = bcrypt.checkpw(password.encode('utf-8'), user[0][2].encode('utf-8'))
         if check_user_existence:
             print('A user with this credential already exists!')
         else:
@@ -112,7 +121,7 @@ class ScreenLogin:
             new_user = hospitallogic.User(email, password, user_type)
             new_user.insert()
             self.frame.destroy()
-            # self.master.destroy()
+
 
             if user_type == "Patient":
                 self.change_screen("home_patient")
@@ -120,10 +129,15 @@ class ScreenLogin:
 
             if user_type == "Nurse":
                 self.change_screen("home_nurse")
-                nurse = Nurse(self.master, email).enter_info()
+                nurse = Nurse(self.master, email)
+                existence = nurse.exist()
+                if len(existence) == 0:
+                    messagebox.showerror(message="Nurse is not registered")
 
-            if user_type == "Admin":
-                self.change_screen("home_admin")
+                else:
+                    self.change_screen("home_nurse")
+                    nurse = nurse.show()
+
             else:
                 # this case should never be true
                 pass

@@ -17,6 +17,8 @@ class User:
         self.user_type = type
         self.password = password
         self.hashed_pw = self.make_password_hash()
+        # self.insert(f"""INSERT INTO LogIn (email_address, password, user_type) VALUES \
+        #                                                 ("admin2023@uic.edu", "{self.hashed_pw}", "{self.user_type}");""")
 
     def __str__(self):
         user = []
@@ -43,7 +45,6 @@ class User:
         return pas
 
     def insert(self, query=None):
-        print("Signing up...")
         try:
             my_db.insert(f"""INSERT INTO LogIn (email_address, password, user_type) VALUES \
                                         ("{self.email}", "{self.hashed_pw}", "{self.user_type}");""")
