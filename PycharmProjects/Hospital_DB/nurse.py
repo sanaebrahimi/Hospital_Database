@@ -5,10 +5,10 @@ from tkinter import ttk
 from ttkthemes import themed_tk
 from tkinter import messagebox
 import bcrypt
-import hospitallogic
-from hospitallogic import User
-import dataaccess as da
-my_db = da.DataBaseManagement('three_layered_db.db')
+import hospital_logic
+from hospital_logic import User
+import database_manager
+my_db = database_manager.DataBaseManagement('three_layered_db.db')
 
 class Nurse():
     def __init__(self, master: themed_tk.ThemedTk, email):

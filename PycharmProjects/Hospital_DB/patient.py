@@ -5,9 +5,8 @@ from tkinter import ttk
 from ttkthemes import themed_tk
 from tkinter import messagebox
 import bcrypt
-import hospitallogic
-from hospitallogic import User
-import dataaccess as da
+import hospital_logic
+import database_manager as da
 my_db = da.DataBaseManagement('three_layered_db.db')
 
 class Patient():
