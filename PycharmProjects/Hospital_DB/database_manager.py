@@ -68,7 +68,7 @@ class DataBaseManager:
         conn.close()
 
     # select from query
-    def select(self, query) -> list:
+    def select(self, query) -> list[tuple]:
         conn = sqlite3.connect(self.path)
         selection = conn.cursor().execute(query).fetchall()
         conn.close()

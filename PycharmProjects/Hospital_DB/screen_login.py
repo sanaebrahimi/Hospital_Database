@@ -35,6 +35,7 @@ class ScreenLogin:
         ttk.Button(inner_frame, text='Login', width=18, command=self.login).grid(row=6, column=0)
         ttk.Label(inner_frame, text="Or...").grid(row=7, column=0)
         ttk.Button(inner_frame, text='Patient Sign Up', width=18, command=self.signup_patient).grid(row=8, column=0)
+        ttk.Button(inner_frame, text='Admin Sign Up', width=18, command=self.signup_admin).grid(row=9, column=0)
 
         for widget in inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
@@ -44,7 +45,7 @@ class ScreenLogin:
         user_type = self.user_type_var.get()
         user_dict = self.hospital_logic.get_user_info(self.username_var.get(), user_type)
         if(0 < len(user_dict)):
-            if(self.hospital_logic.is_password_valid(self.password_var.get(), user_dict["password"])):
+            if(self.hospital_logic.is_password_valid(password=self.password_var.get(), hash=user_dict["password"])):
                 print("Logging in...")
                 self.frame.destroy()
                 if user_type == "Patient":
@@ -64,3 +65,11 @@ class ScreenLogin:
     def signup_patient(self) -> None:
         self.frame.destroy()
         self.change_screen("signup_patient")
+
+    def signup_admin(self) -> None:
+        admin_dict = self.hospital_logic.get_admin_info()
+        if(0 == len(admin_dict)):
+            self.frame.destroy()
+            self.change_screen("signup_admin")
+        else:
+            messagebox.showerror(message="There can only be one Admin!")
