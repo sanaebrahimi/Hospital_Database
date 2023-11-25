@@ -3,9 +3,7 @@ import sqlite3
 
 
 # DataBaseManagement class to insert queries into and select from database
-# drop table Nurse;
-#            drop table Patient;
-#            # drop table LogIn;
+
 # drop table NurseSchedule;
 # drop table Nurse;
 # drop table Patient;
@@ -77,6 +75,31 @@ class DataBaseManagement:
                 FOREIGN KEY(EmployeeID) REFERENCES Nurse(EmployeeID) on delete cascade,
                 FOREIGN KEY(email) REFERENCES Nurse(username) on delete cascade
             );
+            CREATE TRIGGER IF NOT EXISTS check_numberof_nurses_scheduled
+                AFTER INSERT ON NurseSchedule
+            BEGIN
+                SELECT
+                    CASE
+	                    WHEN (SELECT COUNT(EmployeeID) from NurseSchedule WHERE New.date = date AND New.time = time GROUP BY date, time) == 12 THEN
+   	                        RAISE (ABORT,'12 Nurse Scheduled for this time slot')
+                    END;
+            END;
+            CREATE TRIGGER IF NOT EXISTS check_nurses_email
+            BEFORE INSERT ON Nurse 
+            BEGIN
+            SELECT CASE 
+            WHEN 
+                (NEW.username IN
+                (SELECT
+                    Nurse.username from Nurse
+                    WHERE 
+                    NEW.username = Nurse.username))
+                    THEN
+   	                RAISE (ABORT,'This email already exists!')
+   	                END;          
+            END;
+            
+            
 
         """)
 

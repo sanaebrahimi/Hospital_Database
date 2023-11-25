@@ -24,12 +24,12 @@ class Admin():
 
         user = [" " for i in range(12)]
         ttk.Button(self.inner_frame, text='Register Employee', width=18, command= lambda: self.register_nurse(user)).grid(row=4, column=0)  # command=self.login
-        ttk.Button(self.inner_frame, text='Delete Employee', width=18).grid(row=5, column=0)
+        ttk.Button(self.inner_frame, text='Delete Employee', width=18, command = lambda: self.delete_nurse()).grid(row=5, column=0)
         ttk.Button(self.inner_frame, text='Edit Employee Information', width=18, command = lambda: self.update_info()).grid(row=6, column=0)
         ttk.Button(self.inner_frame, text='Add Vaccine', width=18).grid(row=4, column=1)  # command=self.signup
         ttk.Button(self.inner_frame, text='Update Vaccine', width=18).grid(row=7, column=1)  # command=self.signup
         ttk.Button(self.inner_frame, text='View Patient', width=18).grid(row=5, column=1)  # command=self.signup
-        ttk.Button(self.inner_frame, text='View Nurse', width=18).grid(row=6, column=1)
+        ttk.Button(self.inner_frame, text='View Nurse', width=18, command = lambda: self.view_nurses()).grid(row=6, column=1)
 
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
@@ -38,6 +38,7 @@ class Admin():
 
     def register_nurse(self, user):
         # username, FirstName, LastName, Address, Phone, age, gender
+
         self.inner_frame = tk.LabelFrame(self.master)
         self.inner_frame.pack(padx=10, pady=10)
 
@@ -88,6 +89,8 @@ class Admin():
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
 
+        # self.inner_frame.destroy()
+
 
     def save(self, user):
         user = user.exist()
@@ -109,7 +112,6 @@ class Admin():
         self.inner_frame.destroy()
     def update_info(self):
 
-        # self.inner_frame.destroy()
         self.inner_frame = tk.LabelFrame(self.master)
         self.inner_frame.pack(padx=10, pady=10)
         email = tk.StringVar()
@@ -120,7 +122,7 @@ class Admin():
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
 
-
+        # self.inner_frame.destroy()
     def search(self, user):
         self.inner_frame.destroy()
         user = user.exist()
@@ -131,5 +133,73 @@ class Admin():
         else:
             user = [" " for i in range(12)]
         self.register_nurse(user=user)
+
+    def view_nurses(self):
+
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        nurses = my_db.show(f""" SELECT * from Nurse""")
+        print(nurses)
+        r = 2
+        for i in range(len(nurses)): #nurse in nurses:
+            ttk.Button(self.inner_frame, text=str(nurses[i][0])+"-"+" " + nurses[i][2] +" " + nurses[i][3], width=18, command = lambda i=i: self.view_nurse_schedules([nurses[i][0],nurses[i][1], nurses[i][2], nurses[i][3]])).grid(row=r, column=0)
+            # ttk.Label(self.inner_frame, text= ).grid(row=r, column=1, sticky='w')
+            r += 1
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+        # self.inner_frame.destroy()
+    def view_nurse_schedules(self, nurse):
+        self.inner_frame.destroy()
+
+        nurse_schedule = my_db.show(f""" SELECT * from NurseSchedule Where EmployeeID = {nurse[0]}""")
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        print(nurse_schedule[0])
+        ttk.Label(self.inner_frame, text=nurse[2] + " " + nurse[3]).grid(row=1, column=0, sticky='w')
+        ttk.Label(self.inner_frame, text=nurse[1]).grid(row=1, column=1, sticky='w')
+        ttk.Label(self.inner_frame, text= "Schedule: ").grid(row=2, column=0, sticky='w')
+        r  = 4
+        if len(nurse_schedule) > 0:
+            for time_schedule in nurse_schedule:
+                ttk.Label(self.inner_frame, text= time_schedule[3] + " " + time_schedule[4] ).grid(row=r, column=0, sticky='w')
+                r += 1
+
+        ttk.Button(self.inner_frame, text="Back",
+                   width=18, command=lambda : self.view_nurses()).grid(row=r+1, column=0)
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+        # self.inner_frame.destroy()
+
+
+    def delete_nurse(self):
+        # self.inner_frame.destroy()
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        nurses = my_db.show(f""" SELECT * from Nurse""")
+        r = 2
+        for i in range(len(nurses)):  # nurse in nurses:
+            ttk.Button(self.inner_frame, text=str(nurses[i][0]) + "-" + " " + nurses[i][2] + " " + nurses[i][3],
+                       width=18, command=lambda i=i: self.delete_employee(
+                    [nurses[i][0], nurses[i][1], nurses[i][2], nurses[i][3]])).grid(row=r, column=0)
+            # ttk.Label(self.inner_frame, text= ).grid(row=r, column=1, sticky='w')
+            r += 1
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+    def delete_employee(self, employee):
+        self.inner_frame.destroy()
+        my_db.show(f""" Delete from Nurse WHERE EmployeeID = "{employee[0]}" and username = "{employee[1]}" """)
+        my_db.show(f""" Delete from NurseSchedule WHERE EmployeeID = "{employee[0]}" and email = "{employee[0]}" """)
+        # self.inner_frame.destroy()
+        self.delete_nurse()
+
+
+
+
+
+
+
 
 

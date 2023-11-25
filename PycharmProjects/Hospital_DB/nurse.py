@@ -104,11 +104,15 @@ class Nurse():
 
     def on_click(self, date, time_slot,user):
 
-        my_db.insert(f""" INSERT INTO NurseSchedule(EmployeeID, date, time)VALUES ("{user}", "{date}", "{time_slot}") """)
-        self.frame.destroy()
-        # print(my_db.show(f""" select * from NurseSchedule"""))
+        my_db.insert(f""" INSERT INTO NurseSchedule(EmployeeID, email, date, time)VALUES ("{user}", "{self.email}", "{date}", "{time_slot}") """)
+
+        # print(my_db.show(f"""SELECT COUNT(EmployeeID) WHERE EmployeeID in(SELECT EmployeeID from NurseSchedule GROUP BY date) GROUP BY time"""))
+        self.inner_frame.destroy()
 
     def scheduling(self, employee_id):
+        print(my_db.show(f""" select * from NurseSchedule"""))
+        print(my_db.show(f"""SELECT COUNT(EmployeeID) from NurseSchedule GROUP BY date, time"""))
+        # print(my_db.show(f"""SELECT COUNT(EmployeeID) from NurseSchedule WHERE EmployeeID in(SELECT EmployeeID from NurseSchedule GROUP BY date) GROUP BY time"""))
 
         self.inner_frame = tk.LabelFrame(self.master)
         self.inner_frame.pack(padx=10, pady=10)
