@@ -106,7 +106,7 @@ class Nurse():
 
         my_db.insert(f""" INSERT INTO NurseSchedule(EmployeeID, date, time)VALUES ("{user}", "{date}", "{time_slot}") """)
         self.frame.destroy()
-        print(my_db.show(f""" select * from NurseSchedule"""))
+        # print(my_db.show(f""" select * from NurseSchedule"""))
 
     def scheduling(self, employee_id):
 
@@ -134,7 +134,6 @@ class Nurse():
 
     def exist(self, email = None):
         user = my_db.show(f""" SELECT * FROM Nurse WHERE username ="{self.email}" """)
-        print(user)
         return user
 
 
