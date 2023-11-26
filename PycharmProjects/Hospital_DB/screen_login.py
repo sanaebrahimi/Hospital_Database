@@ -45,7 +45,7 @@ class ScreenLogin:
         user_type = self.user_type_var.get()
         user_dict = self.hospital_logic.get_user_info(self.username_var.get(), user_type)
         if(0 != len(user_dict)):
-            if(self.hospital_logic.is_password_valid(password=self.password_var.get(), hash=user_dict["password"])):
+            if(self.hospital_logic.is_password_valid(password=self.password_var.get(), hash=user_dict["Password"])):
                 print("Logging in...")
                 self.frame.destroy()
                 if user_type == "Patient":

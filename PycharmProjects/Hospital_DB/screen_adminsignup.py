@@ -33,11 +33,12 @@ class ScreenAdminSignup:
             widget.grid_configure(padx=50, pady=5)
     
     def signup(self):
-        admin_fields = [self.username.get(), self.password.get()]
-        for value in admin_fields:
-            if(value == ""):
+        fields = [self.username.get(), self.password.get()]
+        for field in fields:
+            if(field == ""):
                 messagebox.showerror(message="Please complete all fields!")
                 return
         
-        self.hospital_logic.admin_signup(fields=admin_fields)
+        self.frame.destroy()
+        self.hospital_logic.admin_signup(fields[0], fields[1])
         self.routes("home_admin")

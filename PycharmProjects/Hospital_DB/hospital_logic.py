@@ -18,32 +18,47 @@ class HospitalLogic:
                        race, occupation, address, phone, medical_history) -> None:
         print("Signing up patient...")
         try:
-            self.db.insert(f"""INSERT INTO LogIn (username, password, user_type)
+            self.db.insert(f"""INSERT INTO LogIn (Username, Password, UserType)
                 VALUES ("{username}", "{password}", "Patient");""")
             
-            user_id = self.get_user_info(username=username, user_type="Patient")["user_id"]
+            user_id = self.get_user_info(username=username, user_type="Patient")["UserID"]
 
-            self.db.insert(f"""INSERT INTO Patient (user_id, SSN, firstname, lastname, age,
-                           gender,race, occupation, address, phone, medical_history)
+            self.db.insert(f"""INSERT INTO Patient (UserID, SSN, Firstname, Lastname, Age,
+                           Gender, Race, Occupation, Address, Phone, MedicalHistory)
                            VALUES ("{user_id}", "{SSN}", "{firstname}", "{lastname}", "{age}", "{gender}",
                            "{race}", "{occupation}", "{address}", "{phone}", "{medical_history}");""")
             
-            print(f"""Signed up patient with user_id: {user_id}...""")
+            print(f"""Signed up patient with UserID: {user_id}...""")
         except:
-            print("ERROR: _insert_user() failed!")
+            print("ERROR: patient_signup() failed!")
 
     # Signs up an admin by inserting its user info
     def admin_signup(self, username, password) -> None:
         print("Signing up admin...")
         try:
-            self.db.insert(f"""INSERT INTO LogIn (username, password, user_type)
-                VALUES ("{username}", "{password}", "Admin");""")
+            self.db.insert(f"""INSERT INTO LogIn (Username, Password, UserType)
+                VALUES ("{username}", "{self._get_hash(password)}", "Admin");""")
             
-            user_id = self.get_admin_info()["user_id"]
+            user_id = self.get_admin_info()["UserID"]
             
-            print(f"""Signed up admin with user_id: {user_id}...""")
+            print(f"""Signed up admin with UserID: {user_id}...""")
         except:
-            print("ERROR: _insert_user() failed!")
+            print("ERROR: admin_signup() failed!")
+
+    def nurse_signup(self, username, password, firstname, lastname, address, phone, age, gender) -> None:
+        print("Signing up nurse...")
+        try:
+            self.db.insert(f"""INSERT INTO LogIn (Username, Password, UserType)
+                VALUES ("{username}", "{password}", "Nurse");""")
+            
+            user_id = self.get_user_info(username=username, user_type="Nurse")["UserID"]
+
+            self.db.insert(f"""INSERT INTO Nurse (UserID, FirstName, LastName, Address, Phone, Age, Gender)
+                           VALUES ("{user_id}", "{firstname}", "{lastname}","{address}","{phone}", "{age}", "{gender}");""")
+            
+            print(f"""Signed up nurse with UserID: {user_id}...""")
+        except:
+            print("ERROR: nurse_signup() failed!")
 
     # Parses the first row/tuple in the selection list into a dictionary with the given fields
     def _parse_row(self, selection: list[tuple], fields: list) -> dict:
@@ -57,8 +72,8 @@ class HospitalLogic:
     def get_user_info(self, username: str, user_type: str) -> dict:
         try:
             print("Getting user_info...")
-            selection = self.db.select(f""" SELECT * FROM LogIn WHERE username="{username}" AND user_type="{user_type}" """)
-            fields = ["user_id", "username", "password", "user_type"]
+            selection = self.db.select(f""" SELECT * FROM LogIn WHERE Username="{username}" AND UserType="{user_type}" """)
+            fields = ["UserID", "Username", "Password", "UserType"]
             return self._parse_row(selection=selection, fields=fields)
         except:
             print("ERROR: get_user_info() failed!")
@@ -67,8 +82,8 @@ class HospitalLogic:
     def get_admin_info(self) -> dict:
         try:
             print("Getting admin info...")
-            selection = self.db.select("""SELECT * FROM LogIn WHERE user_type="Admin" """)
-            fields = ["user_id", "username", "password", "user_type"]
+            selection = self.db.select("""SELECT * FROM LogIn WHERE UserType="Admin" """)
+            fields = ["UserID", "Username", "Password", "UserType"]
             return self._parse_row(selection=selection, fields=fields)
         except:
             print("ERROR: get_admin_info() failed!")

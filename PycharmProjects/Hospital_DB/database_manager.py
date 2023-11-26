@@ -12,38 +12,38 @@ class DataBaseManager:
         conn.cursor().executescript("""
             
             CREATE TABLE IF NOT EXISTS LogIn(
-                user_id INTEGER PRIMARY KEY,
-                username TEXT NOT NULL,
-                password TEXT NOT NULL,
-                user_type TEXT NOT NULL
+                UserID INTEGER PRIMARY KEY,
+                Username TEXT NOT NULL,
+                Password TEXT NOT NULL,
+                UserType TEXT NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS Patient(
-                patient_id INTEGER PRIMARY KEY,
-                user_id INTEGER,
+                PatientID INTEGER PRIMARY KEY,
+                UserID INTEGER,
                 SSN INTEGER NOT NULL,
-                firstname TEXT NOT NULL,
-                lastname TEXT NOT NULL,
-                age INTEGER NOT NULL,
-                gender TEXT NOT NULL,
-                race TEXT NOT NULL,
-                occupation TEXT NOT NULL,
-                address TEXT NOT NULL,
-                phone INTEGER NOT NULL,
-                medical_history TEXT NOT NULL,
-                FOREIGN KEY(user_id) REFERENCES LogIn(user_id)
+                FirstName TEXT NOT NULL,
+                lastName TEXT NOT NULL,
+                Age INTEGER NOT NULL,
+                Gender TEXT NOT NULL,
+                Race TEXT NOT NULL,
+                Occupation TEXT NOT NULL,
+                Address TEXT NOT NULL,
+                Phone INTEGER NOT NULL,
+                MedicalHistory TEXT NOT NULL,
+                FOREIGN KEY(UserID) REFERENCES LogIn(UserID)
             );
 
             CREATE TABLE IF NOT EXISTS Nurse(
-                employee_id INTEGER PRIMARY KEY,
-                user_id INTEGER,
-                firstname TEXT NOT NULL,
-                lastname TEXT NOT NULL,
-                address TEXT NOT NULL,
-                phone INTEGER NOT NULL,
-                age INTEGER NOT NULL,
-                gender TEXT NOT NULL,
-                FOREIGN KEY(user_id) REFERENCES LogIn(user_id)
+                EmployeeID INTEGER PRIMARY KEY,
+                UserID INTEGER,
+                FirstName TEXT NOT NULL,
+                LastName TEXT NOT NULL,
+                Address TEXT NOT NULL,
+                Phone INTEGER NOT NULL,
+                Age INTEGER NOT NULL,
+                Gender TEXT NOT NULL,
+                FOREIGN KEY(UserID) REFERENCES LogIn(UserID)
             );
 
             CREATE TABLE IF NOT EXISTS Vaccine(

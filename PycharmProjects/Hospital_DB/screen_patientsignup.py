@@ -74,19 +74,21 @@ class ScreenPatientSignup:
 
 
     def signup(self) -> None:
-        patient_fields = [self.username.get(), self.password.get(), self.ssn.get(),
-                        self.fname.get(), self.lname.get(), self.age.get(),
-                        self.gender.get(), self.race.get(), self.occupation.get(),
-                        self.address.get(), self.phone.get(), self.medical_history.get()]
-        for value in patient_fields:
-            if(value == ""):
+        fields = [self.username.get(), self.password.get(), self.ssn.get(),
+                  self.fname.get(), self.lname.get(), self.age.get(),
+                  self.gender.get(), self.race.get(), self.occupation.get(),
+                  self.address.get(), self.phone.get(), self.medical_history.get()]
+        for field in fields:
+            if(field == ""):
                 messagebox.showerror(message="Please complete all fields!")
                 return
         
-        user_dict = self.hospital_logic.get_user_info(username=patient_fields[0], user_type="Patient")
+        user_dict = self.hospital_logic.get_user_info(username=fields[0], user_type="Patient")
 
         if(0 == len(user_dict)):
-            self.hospital_logic.patient_signup(fields=patient_fields)
+            self.frame.destroy()
+            self.hospital_logic.patient_signup(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5],
+                                               fields[6], fields[7], fields[8], fields[9], fields[10], fields[11])
             self.routes("home_patient")
         else:
             messagebox.showerror(message="Username already taken!")
