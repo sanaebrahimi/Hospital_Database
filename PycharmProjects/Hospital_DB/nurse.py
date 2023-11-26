@@ -9,8 +9,8 @@ from datetime import date
 from datetime import datetime
 from tkinter import messagebox
 import bcrypt
-import hospitallogic
-from hospitallogic import User
+import hospital_logic
+from hospital_logic import User
 import dataaccess as da
 my_db = da.DataBaseManagement('three_layered_db.db')
 

@@ -8,14 +8,14 @@ from ttkthemes import themed_tk
 from tkinter import messagebox
 import bcrypt
 from nurse import Nurse
-import hospitallogic
-from hospitallogic import User
+import hospital_logic
+from hospital_logic import User
 from patient import Patient
 from admin import Admin
 class ScreenLogin:
     def __init__(self, master: themed_tk.ThemedTk, change_screen_func: Callable[[str], None]):
         self.master = master
-        admin = hospitallogic.get_user(email="admin2023@uic.edu", user_type="Admin")
+        admin = hospital_logic.get_user(email="admin2023@uic.edu", user_type="Admin")
         if len(admin) == 0:
             User(email="admin2023@uic.edu", password="09876", type="Admin").insert()
         self.change_screen = change_screen_func
@@ -52,7 +52,7 @@ class ScreenLogin:
         email = self.email_var.get()
         password = self.password_var.get()
         user_type = self.user_type_var.get()
-        user = hospitallogic.get_user(email, user_type)
+        user = hospital_logic.get_user(email, user_type)
         login_status = False
         if len(user) > 0:
             login_status = bcrypt.checkpw(password.encode('utf-8'), user[0][2].encode('utf-8'))
@@ -63,13 +63,13 @@ class ScreenLogin:
             # self.master.destroy()
             if user_type == "Patient":
                 self.change_screen("home_patient")
-                user = hospitallogic.get_user(email, user_type)
+                user = hospital_logic.get_user(email, user_type)
                 if len(user) > 0:
                     patient = Patient(self.master, email)
                     patient.show()
             if user_type == "Nurse":
                 self.change_screen("home_nurse")
-                user = hospitallogic.get_user(email, user_type)
+                user = hospital_logic.get_user(email, user_type)
                 if len(user) > 0:
                     nurse = Nurse(self.master, email)
                     existence = nurse.exist()
@@ -110,7 +110,7 @@ class ScreenLogin:
         email = self.email_var.get()
         password = self.password_var.get()
         user_type = self.user_type_var.get()
-        user = hospitallogic.get_user(email, user_type)
+        user = hospital_logic.get_user(email, user_type)
         check_user_existence = False
         if len(user) > 0:
             check_user_existence = bcrypt.checkpw(password.encode('utf-8'), user[0][2].encode('utf-8'))
@@ -118,7 +118,7 @@ class ScreenLogin:
             print('A user with this credential already exists!')
         else:
             print("Signing Up...")
-            new_user = hospitallogic.User(email, password, user_type)
+            new_user = hospital_logic.User(email, password, user_type)
             new_user.insert()
             self.frame.destroy()
 
