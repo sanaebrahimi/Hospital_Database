@@ -7,10 +7,10 @@ from tkinter import messagebox
 import hospital_logic as hl
 
 class ScreenPatientSignup:
-    def __init__(self, master: t_tk.ThemedTk, change_screen: Callable[[str], None], hospital_logic: hl.HospitalLogic):
+    def __init__(self, master: t_tk.ThemedTk, routes: Callable[[str], None], hospital_logic: hl.HospitalLogic):
         self.hospital_logic = hospital_logic
         self.master = master
-        self.change_screen = change_screen
+        self.routes = routes
         self.master.title("Patient Sign Up")
 
         self.frame = ttk.Frame(self.master, padding=10)
@@ -87,6 +87,6 @@ class ScreenPatientSignup:
 
         if(0 == len(user_dict)):
             self.hospital_logic.patient_signup(fields=patient_fields)
-            self.change_screen("patient_home")
+            self.routes("home_patient")
         else:
             messagebox.showerror(message="Username already taken!")

@@ -8,10 +8,10 @@ from typing import Callable
 import hospital_logic as hl
 
 class ScreenLogin:
-    def __init__(self, master: t_tk.ThemedTk, change_screen: Callable[[str], None], hospital_logic: hl.HospitalLogic):
+    def __init__(self, master: t_tk.ThemedTk, routes: Callable[[str], None], hospital_logic: hl.HospitalLogic):
         self.hospital_logic = hospital_logic
         self.master = master
-        self.change_screen = change_screen
+        self.routes = routes
         self.master.title('Hospital Portal Login')
 
         self.frame = ttk.Frame(self.master, padding=10)
@@ -44,16 +44,16 @@ class ScreenLogin:
     def login(self) -> None:
         user_type = self.user_type_var.get()
         user_dict = self.hospital_logic.get_user_info(self.username_var.get(), user_type)
-        if(0 < len(user_dict)):
+        if(0 != len(user_dict)):
             if(self.hospital_logic.is_password_valid(password=self.password_var.get(), hash=user_dict["password"])):
                 print("Logging in...")
                 self.frame.destroy()
                 if user_type == "Patient":
-                    self.change_screen("home_patient")
+                    self.routes("home_patient")
                 elif user_type == "Nurse":
-                    self.change_screen("home_nurse")
+                    self.routes("home_nurse")
                 elif user_type == "Admin":
-                    self.change_screen("home_admin")
+                    self.routes("home_admin")
                 else:
                     # this case should never be true
                     print("Unknown user_type")
@@ -64,12 +64,12 @@ class ScreenLogin:
 
     def signup_patient(self) -> None:
         self.frame.destroy()
-        self.change_screen("signup_patient")
+        self.routes("signup_patient")
 
     def signup_admin(self) -> None:
         admin_dict = self.hospital_logic.get_admin_info()
         if(0 == len(admin_dict)):
             self.frame.destroy()
-            self.change_screen("signup_admin")
+            self.routes("signup_admin")
         else:
             messagebox.showerror(message="There can only be one Admin!")

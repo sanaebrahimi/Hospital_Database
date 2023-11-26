@@ -7,10 +7,10 @@ from tkinter import messagebox
 import hospital_logic as hl
 
 class ScreenAdminSignup:
-    def __init__(self, master: t_tk.ThemedTk, change_screen: Callable[[str], None], hospital_logic: hl.HospitalLogic) -> None:
+    def __init__(self, master: t_tk.ThemedTk, routes: Callable[[str], None], hospital_logic: hl.HospitalLogic) -> None:
         self.hospital_logic = hospital_logic
         self.master = master
-        self.change_screen = change_screen
+        self.routes = routes
         self.master.title("Admin Sign Up")
 
         self.frame = ttk.Frame(self.master, padding=10)
@@ -40,4 +40,4 @@ class ScreenAdminSignup:
                 return
         
         self.hospital_logic.admin_signup(fields=admin_fields)
-        self.change_screen("admin_home")
+        self.routes("home_admin")

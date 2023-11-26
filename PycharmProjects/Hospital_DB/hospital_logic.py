@@ -13,47 +13,37 @@ class HospitalLogic:
     def is_password_valid(self, password: str, hash: str) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
 
-    # Inserts a user into the login table with all fields
-    def _insert_user(self, username, password, user_type) -> None:
+    # Signs up a patient by inserting its user and patient info
+    def patient_signup(self, username, password, SSN, firstname, lastname, age, gender,
+                       race, occupation, address, phone, medical_history) -> None:
+        print("Signing up patient...")
         try:
-            self.db.insert(f"""
-                INSERT INTO LogIn (username, password, user_type)
-                VALUES ("{username}", "{password}", "{user_type}");""")
+            self.db.insert(f"""INSERT INTO LogIn (username, password, user_type)
+                VALUES ("{username}", "{password}", "Patient");""")
+            
+            user_id = self.get_user_info(username=username, user_type="Patient")["user_id"]
+
+            self.db.insert(f"""INSERT INTO Patient (user_id, SSN, firstname, lastname, age,
+                           gender,race, occupation, address, phone, medical_history)
+                           VALUES ("{user_id}", "{SSN}", "{firstname}", "{lastname}", "{age}", "{gender}",
+                           "{race}", "{occupation}", "{address}", "{phone}", "{medical_history}");""")
+            
+            print(f"""Signed up patient with user_id: {user_id}...""")
         except:
             print("ERROR: _insert_user() failed!")
 
-    # Inserts a patient into the Patient table with all fields
-    def _insert_patient(self, user_id, SSN, firstname, lastname, age, gender, race,
-                           occupation, address, phone, medical_history) -> None:
-        try:
-            self.db.insert(f"""
-                INSERT INTO Patient (user_id, SSN, firstname, lastname, age, gender,
-                                    race, occupation, address, phone, medical_history)
-                VALUES ("{user_id}", "{SSN}", "{firstname}", "{lastname}", "{age}", "{gender}",
-                        "{race}", "{occupation}", "{address}", "{phone}", "{medical_history}");""")
-        except:
-            print("ERROR: _insert_patient() failed!")
-
-    # Signs up a patient by inserting its user and patient info
-    def patient_signup(self, fields: list) -> None:
-        print("Signing up patient...")
-        self._insert_user(fields[0], self._get_hash(fields[1]), "Patient")
-        
-        user_id = self.get_user_info(username=fields[0], user_type="Patient")["user_id"]
-
-        self._insert_patient(user_id, fields[2], fields[3], fields[4], fields[5], fields[6],
-            fields[7], fields[8], fields[9], fields[10], fields[11])
-        
-        print(f"""Signed up patient with user_id: {user_id}...""")
-
     # Signs up an admin by inserting its user info
-    def admin_signup(self, fields: list) -> None:
+    def admin_signup(self, username, password) -> None:
         print("Signing up admin...")
-        self._insert_user(fields[0], self._get_hash(fields[1]), "Admin")
-        
-        user_id = self.get_admin_info()["user_id"]
-
-        print(f"""Signed up admin with user_id: {user_id}...""")
+        try:
+            self.db.insert(f"""INSERT INTO LogIn (username, password, user_type)
+                VALUES ("{username}", "{password}", "Admin");""")
+            
+            user_id = self.get_admin_info()["user_id"]
+            
+            print(f"""Signed up admin with user_id: {user_id}...""")
+        except:
+            print("ERROR: _insert_user() failed!")
 
     # Parses the first row/tuple in the selection list into a dictionary with the given fields
     def _parse_row(self, selection: list[tuple], fields: list) -> dict:
