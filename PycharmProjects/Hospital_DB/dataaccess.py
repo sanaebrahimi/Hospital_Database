@@ -1,4 +1,3 @@
-# data access and data storage
 import sqlite3
 
 
@@ -14,8 +13,8 @@ class DataBaseManagement:
         self.cur = self.conn.cursor()
 
         self.cur.executescript("""
-            
-            
+
+
             CREATE TABLE IF NOT EXISTS LogIn(
                 user_id INTEGER,
                 email_address TEXT NOT NULL,
@@ -66,15 +65,43 @@ class DataBaseManagement:
                 name text primary key,
                 products text
             );
+            CREATE TABLE IF NOT EXISTS Hospital(
+
+                schedule_id integer primary key AUTOINCREMENT,
+                numberof_patients_per_slot integer DEFAULT 0 NOT NULL,
+                date text,
+                time text
+
+            );
+            CREATE TABLE IF NOT EXISTS VaccineSchedule(
+                appointment_id integer primary key AUTOINCREMENT,
+                registration_id NVARCHAR(320),
+                schedule_id integer,
+                vaccine_name text,
+                date text,
+                time text,
+                FOREIGN KEY(registration_id) REFERENCES Patient(RegistrationID) on delete cascade,
+                FOREIGN KEY(schedule_id) REFERENCES Hospital(schedule_id) on delete cascade
+
+            );
             CREATE TABLE IF NOT EXISTS NurseSchedule(
                 id integer primary key AUTOINCREMENT,
                 EmployeeID INTEGER,
                 email text,
                 date text,
                 time text,
+                numberof_patients_per_nurse integer DEFAULT 0 NOT NULL,
                 FOREIGN KEY(EmployeeID) REFERENCES Nurse(EmployeeID) on delete cascade,
                 FOREIGN KEY(email) REFERENCES Nurse(username) on delete cascade
             );
+            CREATE TRIGGER IF NOT EXISTS add_to_hospital
+                AFTER INSERT ON NurseSchedule 
+                FOR EACH ROW   
+	            WHEN (SELECT COUNT(schedule_id) from Hospital WHERE date = New.date  AND time = New.time  GROUP BY date, time) == 0 
+	                    BEGIN
+                                INSERT INTO Hospital (date, time) VALUES (NEW.date, NEW.time);
+                        END;
+
             CREATE TRIGGER IF NOT EXISTS check_numberof_nurses_scheduled
                 AFTER INSERT ON NurseSchedule
             BEGIN
@@ -98,8 +125,8 @@ class DataBaseManagement:
    	                RAISE (ABORT,'This email already exists!')
    	                END;          
             END;
-            
-            
+
+
 
         """)
 

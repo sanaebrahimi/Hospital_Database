@@ -55,16 +55,16 @@ class Patient():
 
         self.gender = tk.StringVar()
         ttk.Label(self.inner_frame, text="Gender").grid(row=8, column=0, sticky='w')
-        box5 = ttk.Combobox(self.inner_frame, state="readonly", values=["Male", "Female"], textvariable=self.gender)
+        box5 = ttk.Combobox(self.inner_frame, state="readonly", values=[" ", "Male", "Female"], textvariable=self.gender)
         box5.grid(row=9, column=0)
-        curr = ["Male", "Female"].index(user[6])
+        curr = [" ","Male", "Female"].index(user[6])
         box5.current(curr)
 
         self.race = tk.StringVar()
         ttk.Label(self.inner_frame, text="Race").grid(row=8, column=1, sticky='w')
         box6 = ttk.Combobox(self.inner_frame, state="readonly", values=[" ","Hispanic", "African American", "White"], textvariable=self.race)
         box6.grid(row=9, column=1)
-        curr = ['',"Hispanic", "African American", "White"].index(user[7])
+        curr = [" ","Hispanic", "African American", "White"].index(user[7])
         box6.current(curr)
 
         self.phone = tk.StringVar()
