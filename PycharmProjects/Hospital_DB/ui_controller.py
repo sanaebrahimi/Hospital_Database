@@ -7,6 +7,7 @@ import screen_patientsignup as s_ps
 import screen_adminsignup as s_as
 import screen_nursesignup as s_ns
 import screen_adminhome as s_ah
+import screen_addvaccine as s_av
 
 class UIController:
     def __init__(self):
@@ -27,5 +28,7 @@ class UIController:
             self.current_screen = s_ah.ScreenAdminHome(master=self.master, routes=self.routes, hospital_logic=self.hospital_logic)
         elif(route == "home_patient"):
             pass
+        elif(route == "add_vaccine"):
+            self.current_screen = s_av.ScreenAddVaccine(master=self.master, routes=self.routes, hospital_logic=self.hospital_logic)
 
 UIController()

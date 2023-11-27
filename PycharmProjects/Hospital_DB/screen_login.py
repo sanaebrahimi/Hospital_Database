@@ -20,17 +20,17 @@ class ScreenLogin:
         inner_frame = tk.LabelFrame(self.frame)
         inner_frame.pack(padx=10, pady=10)
 
-        self.username_var = tk.StringVar()
+        self.username = tk.StringVar()
         ttk.Label(inner_frame, text='Username').grid(row=0, column=0, sticky='w')
-        ttk.Entry(inner_frame, textvariable=self.username_var).grid(row=1, column=0)
+        ttk.Entry(inner_frame, textvariable=self.username).grid(row=1, column=0)
 
-        self.password_var = tk.StringVar()
+        self.password = tk.StringVar()
         ttk.Label(inner_frame, text='Password').grid(row=2, column=0, sticky='w')
-        ttk.Entry(inner_frame, textvariable=self.password_var).grid(row=3, column=0)
+        ttk.Entry(inner_frame, textvariable=self.password).grid(row=3, column=0)
 
-        self.user_type_var = tk.StringVar()
+        self.user_type = tk.StringVar()
         ttk.Label(inner_frame, text="User Type").grid(row=4, column=0, sticky='w')
-        ttk.Combobox(inner_frame, state="readonly", values=["Patient", "Nurse", "Admin"], textvariable=self.user_type_var).grid(row=5, column=0)
+        ttk.Combobox(inner_frame, state="readonly", values=["Patient", "Nurse", "Admin"], textvariable=self.user_type).grid(row=5, column=0)
 
         ttk.Button(inner_frame, text='Login', width=18, command=self.login).grid(row=6, column=0)
         ttk.Label(inner_frame, text="Or...").grid(row=7, column=0)
@@ -42,21 +42,27 @@ class ScreenLogin:
 
 
     def login(self) -> None:
-        user_type = self.user_type_var.get()
-        user_dict = self.hospital_logic.get_user_info(self.username_var.get(), user_type)
+        fields = [self.username.get(), self.password.get(), self.user_type.get()]
+        for field in fields:
+            if(field == ""):
+                messagebox.showerror(message="Please complete all fields!")
+                return
+        
+        user_dict = self.hospital_logic.get_user_info(fields[0], fields[2])
+
         if(0 != len(user_dict)):
-            if(self.hospital_logic.is_password_valid(password=self.password_var.get(), hash=user_dict["Password"])):
+            if(self.hospital_logic.is_password_valid(password=fields[1], hash=user_dict["Password"])):
                 print("Logging in...")
                 self.frame.destroy()
-                if user_type == "Patient":
+                if fields[2] == "Patient":
                     self.routes("home_patient")
-                elif user_type == "Nurse":
+                elif fields[2] == "Nurse":
                     self.routes("home_nurse")
-                elif user_type == "Admin":
+                elif fields[2] == "Admin":
                     self.routes("home_admin")
                 else:
                     # this case should never be true
-                    print("Unknown user_type")
+                    print("Unknown user type")
             else:
                 messagebox.showerror(message="Password Incorrect!")
         else:

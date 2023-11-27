@@ -10,7 +10,6 @@ class DataBaseManager:
         self.path = path
         conn = sqlite3.connect(self.path)
         conn.cursor().executescript("""
-            
             CREATE TABLE IF NOT EXISTS LogIn(
                 UserID INTEGER PRIMARY KEY,
                 Username TEXT NOT NULL,
@@ -47,10 +46,11 @@ class DataBaseManager:
             );
 
             CREATE TABLE IF NOT EXISTS Vaccine(
-                VaccName text primary key,
-                Available_Dose integer,
-                OnHold_Dose integer,
-                CompanyName REFERENCES Company(name)
+                VaccineID INTEGER PRIMARY KEY,
+                CompanyName TEXT NOT NULL,
+                VaccineName TEXT NOT NULL,
+                Available_Doses INTEGER NOT NULL,
+                OnHold_Doses INTEGER NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS Company(
@@ -66,13 +66,6 @@ class DataBaseManager:
         conn.cursor().execute(query)
         conn.commit()
         conn.close()
-
-    # select from query
-    def select_tuples(self, query) -> list[tuple]:
-        conn = sqlite3.connect(self.path)
-        selection = conn.cursor().execute(query).fetchall()
-        conn.close()
-        return selection
     
     def select_dicts(self, query) -> list[dict]:
         conn = sqlite3.connect(self.path)

@@ -93,3 +93,20 @@ class HospitalLogic:
             return nurses
         except:
             print("ERROR: get_nurses() failed!")
+
+    # Gets a list of all vaccines in the database
+    def get_vaccines(self) -> list[dict]:
+        try:
+            print("Getting vaccines...")
+            vaccines = self.db.select_dicts("""SELECT * FROM Vaccine """)
+            return vaccines
+        except:
+            print("ERROR: get_vaccines() failed!")
+    
+    def add_vaccine(self, CompanyName, VaccineName) -> None:
+        print("Adding Vaccine...")
+        try:
+            self.db.insert(f"""INSERT INTO Vaccine (CompanyName, VaccineName, Available_Doses, OnHold_Doses)
+                           VALUES ("{CompanyName}", "{VaccineName}", "0", "0"); """)
+        except:
+            print("ERROR: add_vaccine() failed!")
