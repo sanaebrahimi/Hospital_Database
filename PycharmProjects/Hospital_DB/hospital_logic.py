@@ -45,6 +45,7 @@ class HospitalLogic:
         except:
             print("ERROR: admin_signup() failed!")
 
+    # Signs up a nurse by inserting its user and nurse info
     def nurse_signup(self, username, password, firstname, lastname, address, phone, age, gender) -> None:
         print("Signing up nurse...")
         try:
@@ -60,30 +61,35 @@ class HospitalLogic:
         except:
             print("ERROR: nurse_signup() failed!")
 
-    # Parses the first row/tuple in the selection list into a dictionary with the given fields
-    def _parse_row(self, selection: list[tuple], fields: list) -> dict:
-        field_dict = {}
-        if (0 != len(selection)):
-            for field in range(0, len(fields)):
-                field_dict[fields[field]] = selection[0][field]
-        return field_dict
-
     # Searches the LogIn table for a user with the given username and user_type and returns all fields
     def get_user_info(self, username: str, user_type: str) -> dict:
         try:
             print("Getting user_info...")
-            selection = self.db.select(f""" SELECT * FROM LogIn WHERE Username="{username}" AND UserType="{user_type}" """)
-            fields = ["UserID", "Username", "Password", "UserType"]
-            return self._parse_row(selection=selection, fields=fields)
+            selection = self.db.select_dicts(f""" SELECT * FROM LogIn WHERE Username="{username}" AND UserType="{user_type}" """)
+            if(0 == len(selection)):
+                return {}
+            else:
+                return selection[0]
         except:
             print("ERROR: get_user_info() failed!")
 
-    # Searches the LogIn table for the admin user
+    # Gets the fields of the admin user
     def get_admin_info(self) -> dict:
         try:
             print("Getting admin info...")
-            selection = self.db.select("""SELECT * FROM LogIn WHERE UserType="Admin" """)
-            fields = ["UserID", "Username", "Password", "UserType"]
-            return self._parse_row(selection=selection, fields=fields)
+            selection = self.db.select_dicts("""SELECT * FROM LogIn WHERE UserType="Admin" """)
+            if(0 == len(selection)):
+                return {}
+            else:
+                return selection[0]
         except:
             print("ERROR: get_admin_info() failed!")
+
+    # Gets a list of all nurses in the database
+    def get_nurses(self) -> list[dict]:
+        try:
+            print("Getting nurses...")
+            nurses = self.db.select_dicts("""SELECT * FROM Nurse JOIN LogIn ON Nurse.UserID=LogIn.UserID """)
+            return nurses
+        except:
+            print("ERROR: get_nurses() failed!")

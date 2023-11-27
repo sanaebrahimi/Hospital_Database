@@ -70,6 +70,6 @@ class ScreenNurseSignup:
             self.frame.destroy()
             self.hospital_logic.nurse_signup(fields[0], fields[1], fields[2], fields[3],
                                              fields[4], fields[5], fields[6], fields[7])
-            self.routes("home_nurse")
+            self.routes("home_admin")
         else:
             messagebox.showerror(message="Username already taken!")
