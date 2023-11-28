@@ -110,6 +110,7 @@ class Admin():
                         where  
                         EmployeeID = "{user[0]}";""")
         self.inner_frame.destroy()
+        return
     def update_info(self):
 
         self.inner_frame = tk.LabelFrame(self.master)
@@ -173,6 +174,7 @@ class Admin():
         # self.inner_frame.destroy()
 
 
+
     def delete_nurse(self):
         # self.inner_frame.destroy()
         self.inner_frame = tk.LabelFrame(self.master)
@@ -187,14 +189,14 @@ class Admin():
             r += 1
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
-
+        return
     def delete_employee(self, employee):
         self.inner_frame.destroy()
         my_db.show(f""" Delete from Nurse WHERE EmployeeID = "{employee[0]}" and username = "{employee[1]}" """)
         my_db.show(f""" Delete from NurseSchedule WHERE EmployeeID = "{employee[0]}" and email = "{employee[0]}" """)
-        # self.inner_frame.destroy()
+        #
         self.delete_nurse()
-
+        self.inner_frame.destroy()
 
 
 

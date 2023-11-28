@@ -101,18 +101,22 @@ class Nurse():
             widget.grid_configure(padx=50, pady=5)
 
         self.frame.destroy()
+        return
 
     def on_click(self, date, time_slot,user):
-
+        count = my_db.show(f"""SELECT COUNT(schedule_id) from Hospital WHERE date = "{date}"  AND time = "{time_slot}" """)
         my_db.insert(f""" INSERT INTO NurseSchedule(EmployeeID, email, date, time)VALUES ("{user}", "{self.email}", "{date}", "{time_slot}") """)
+        if count[0][0] == 0:
+            my_db.insert(f"""INSERT INTO Hospital (date, time) VALUES ("{date}", "{time_slot}")""")
 
-        # print(my_db.show(f"""SELECT COUNT(EmployeeID) WHERE EmployeeID in(SELECT EmployeeID from NurseSchedule GROUP BY date) GROUP BY time"""))
+        print(count)
         self.inner_frame.destroy()
+        return
 
     def scheduling(self, employee_id):
+        print(my_db.show(f""" select * from Hospital"""))
         print(my_db.show(f""" select * from NurseSchedule"""))
         print(my_db.show(f"""SELECT COUNT(EmployeeID) from NurseSchedule GROUP BY date, time"""))
-        # print(my_db.show(f"""SELECT COUNT(EmployeeID) from NurseSchedule WHERE EmployeeID in(SELECT EmployeeID from NurseSchedule GROUP BY date) GROUP BY time"""))
 
         self.inner_frame = tk.LabelFrame(self.master)
         self.inner_frame.pack(padx=10, pady=10)

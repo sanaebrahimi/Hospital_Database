@@ -8,6 +8,9 @@ import bcrypt
 import hospitallogic
 from hospitallogic import User
 import dataaccess as da
+from tkcalendar import Calendar
+from datetime import date
+from datetime import datetime
 my_db = da.DataBaseManagement('three_layered_db.db')
 
 class Patient():
@@ -23,7 +26,10 @@ class Patient():
 
 
 
-    def enter_info(self, user=None):
+    def enter_info(self, user, update=False):
+        if not update and len(self.exist()) > 0:
+            messagebox.showerror(message="Already registered!")
+            return
 
         self.frame.destroy()
         self.inner_frame = tk.LabelFrame(self.master)
@@ -104,12 +110,12 @@ class Patient():
 
             my_db.insert(f"""INSERT INTO Patient (SSN, username, RegistrationID, FirstName, LastName, age, gender, Race, Occupation, Address, 
                                    Phone, MedicalHistory) VALUES \
-                                                                ("{self.ssn}","{self.reg_id}", "{self.reg_id}", "{self.fname.get().strip()}","{self.lname.get().strip()}", "{self.age.get()}", \
+                                                                ("{self.ssn.get()}","{self.reg_id}", "{self.reg_id}", "{self.fname.get().strip()}","{self.lname.get().strip()}", "{self.age.get()}", \
                                                                  "{self.gender.get()}", "{self.race.get()}", "{self.job.get().strip()}", "{self.address.get().strip()}", "{self.phone.get()}","{self.history.get().strip()}" );""")
         else:
             user = user[0]
             my_db.insert(f"""Update Patient 
-            SET SSN = "{self.ssn}", 
+            SET SSN = "{self.ssn.get()}", 
             username = "{self.reg_id}", 
             FirstName = "{self.fname.get()}", LastName = "{self.lname.get()}", 
             age = "{self.age.get()}" , gender = "{self.gender.get()}" , race = "{self.race.get()}",
@@ -119,6 +125,7 @@ class Patient():
             RegistrationID = "{self.reg_id}";""")
 
         self.inner_frame.destroy()
+        return
         # self.show()
 
     def show(self):
@@ -128,23 +135,116 @@ class Patient():
         user = [" " for i in range(12)]
 
         ttk.Button(inner_frame, text='Register', width=18, command = lambda: self.enter_info(user)).grid(row=4, column=0)  # command=self.login
-        ttk.Button(inner_frame, text='Update Information', width=18, command = lambda: self.update_info() ).grid(row=5, column=0) #command=self.signup
-        ttk.Button(inner_frame, text='Schedule Appointment', width=18).grid(row=6, column=0)  #command=self.signup
+        ttk.Button(inner_frame, text='Update Information', width=18, command = lambda: self.update_info(user) ).grid(row=5, column=0) #command=self.signup
+        ttk.Button(inner_frame, text='Schedule Appointment', width=18, command = lambda: self.scheduling()).grid(row=6, column=0)  #command=self.signup
         ttk.Button(inner_frame, text='Cancel Appointment', width=18).grid(row=7, column=0) # command=self.signup
-        ttk.Button(inner_frame, text='View Information', width=18).grid(row=7, column=0)
+        ttk.Button(inner_frame, text='View Information', width=18, command = lambda: self.view_schedule()).grid(row=7, column=0)
         for widget in inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
 
-    def update_info(self):
+    def update_info(self, user):
 
-        user = self.exist()
-        print(user)
-        if len(user) > 0:
-            user = user[0]
+        user_exists = self.exist()
+        print(user_exists)
+        if len(user_exists) > 0:
+            user = user_exists.pop()
+        # else:
+        #     user = [" " for i in range(12)]
+        self.enter_info(user = user, update=True)
+
+
+    def select_nurse(self, details, vaccine):
+
+        number_check = my_db.show(f"""Select numberof_patients_per_nurse from NurseSchedule where id = {details[4]}""").pop()[0]
+        vaccine_availability = my_db.show(f"""Select Available_Dose from Vaccine where VaccName = {vaccine}""").pop()[0]
+        if number_check < 12 and vaccine_availability > 0:
+            my_db.insert(
+                f""" INSERT INTO VaccineSchedule(schedule_id, registration_id, vaccine_name, NursePractioner, date, time)VALUES \
+                ("{details[4]}","{self.reg_id}", "{vaccine}", "{details[1]}", "{details[2]}", "{details[3]}") """)
+            my_db.insert(f"""Update NurseSchedule
+                            SET 
+                            numberof_patients_per_nurse = numberof_patients_per_nurse + 1
+                            WHERE 
+                            id = {details[4]} """)
+            my_db.insert(f"""Update Vaccine
+                                        SET 
+                                        OnHold_Dose = OnHold_Dose + 1
+                                        WHERE 
+                                        VaccName = {vaccine} """)
+        elif vaccine_availability  == 0:
+            messagebox.showerror(message="Your selected Vaccine is not available!")
+            return
+        elif number_check == 12 :
+            messagebox.showerror(message="Your selected Nurse is not available!")
+            return
+        print(my_db.show(f"""select * from VaccineSchedule"""))
+        print(my_db.show(f"""select * from NurseSchedule"""))
+        self.inner_frame.destroy()
+        return
+
+    def scheduling(self):
+        available_dates = my_db.show(f""" select * from NurseSchedule""")
+        print(available_dates)
+        if len(available_dates) == 0:
+            messagebox.showerror(message="No availability!")
+            return
+        nurses = []
+        date_times = []
+        date_time_nurse = {}
+        options = tuple()
+        for dt in available_dates:
+            date_time = dt[3] + " " + dt[4]
+            date_times.append(date_time)
+            name = my_db.show(
+                f""" SELECT FirstName, LastName from Nurse WHERE EmployeeID = {dt[1]} """)
+            name = name[0][0] + " " + name[0][1]
+            nurses.append(name)
+            tmp =  date_time + "-"+ "Nurse: "+ name
+            date_time_nurse[tmp] = [name, dt[1], dt[3], dt[4], dt[0]]
+            options += (tmp,)
+
+
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        dt_nurse = tk.StringVar()
+
+        selected_dt = ttk.OptionMenu(self.inner_frame, dt_nurse,*options)
+        selected_dt.config(width=25)
+        selected_dt.pack(pady=20, padx=20)
+        choice = date_time_nurse[dt_nurse.get()]
+
+        vaccine = tk.StringVar()
+        vax = ('Pfizer', 'Moderna', 'J&J')
+        selected_vax = ttk.OptionMenu(self.inner_frame, vaccine, *vax)
+        selected_vax.config(width=25)
+        selected_vax.pack(pady=20, padx=20)
+
+        b1 = ttk.Button(self.inner_frame, text="Select", command=lambda: self.select_nurse(choice, vaccine.get())) #command=grad_date()
+        b1.pack(pady=20)
+
+
+    def view_schedule(self):
+
+        patient_schedule = my_db.show(f""" SELECT * from VaccineSchedule Where registration_id = "{self.reg_id}" """)
+
+        patient = self.exist()
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        if len(patient) > 0:
+            patient = patient[0]
+        ttk.Label(self.inner_frame, text=patient[3] + " " + patient[4]).grid(row=1, column=0, sticky='w')
+        ttk.Label(self.inner_frame, text=patient[2]).grid(row=1, column=1, sticky='w')
+        ttk.Label(self.inner_frame, text="Schedule: ").grid(row=2, column=0, sticky='w')
+        r = 4
+        if len(patient_schedule) == 0:
+            messagebox.showerror(message="Nothing scheduled yet!")
         else:
-            user = [" " for i in range(12)]
-        self.enter_info(user = user)
-
+            for time_schedule in patient_schedule:
+                ttk.Label(self.inner_frame, text=time_schedule[5] + " " + time_schedule[6] + "- Vaccine: " + time_schedule[4]).grid(row=r, column=0,                                                                                             sticky='w')
+                r += 1
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+        return
     def exist(self):
         user = my_db.show(f""" SELECT * FROM Patient WHERE username ="{self.reg_id}" or RegistrationID = "{self.reg_id}" """)
         print(my_db.show(f""" SELECT * FROM Patient"""))

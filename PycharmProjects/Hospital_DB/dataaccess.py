@@ -4,17 +4,17 @@ import sqlite3
 # DataBaseManagement class to insert queries into and select from database
 
 # drop table NurseSchedule;
-# drop table Nurse;
-# drop table Patient;
-# drop table LogIn;
+              # drop table Nurse;
+              # drop table Hospital;
+              # drop table Patient;
+              # drop table LogIn;
 class DataBaseManagement:
     def __init__(self, path):
         self.conn = sqlite3.connect(path)
         self.cur = self.conn.cursor()
 
         self.cur.executescript("""
-
-
+            drop table VaccineSchedule;
             CREATE TABLE IF NOT EXISTS LogIn(
                 user_id INTEGER,
                 email_address TEXT NOT NULL,
@@ -75,13 +75,17 @@ class DataBaseManagement:
             );
             CREATE TABLE IF NOT EXISTS VaccineSchedule(
                 appointment_id integer primary key AUTOINCREMENT,
-                registration_id NVARCHAR(320),
                 schedule_id integer,
+                registration_id NVARCHAR(320),
+                NursePractioner integer,
                 vaccine_name text,
                 date text,
                 time text,
-                FOREIGN KEY(registration_id) REFERENCES Patient(RegistrationID) on delete cascade,
-                FOREIGN KEY(schedule_id) REFERENCES Hospital(schedule_id) on delete cascade
+                FOREIGN KEY(vaccine_name) REFERENCES Vaccine(VaccName) on delete cascade,
+                FOREIGN KEY(NursePractioner) REFERENCES Nurse(EmployeeID) on delete cascade,
+                FOREIGN KEY(schedule_id) REFERENCES NurseSchedule(id) on delete cascade,
+                FOREIGN KEY(registration_id) REFERENCES Patient(RegistrationID) on delete cascade
+
 
             );
             CREATE TABLE IF NOT EXISTS NurseSchedule(
@@ -92,23 +96,17 @@ class DataBaseManagement:
                 time text,
                 numberof_patients_per_nurse integer DEFAULT 0 NOT NULL,
                 FOREIGN KEY(EmployeeID) REFERENCES Nurse(EmployeeID) on delete cascade,
-                FOREIGN KEY(email) REFERENCES Nurse(username) on delete cascade
-            );
-            CREATE TRIGGER IF NOT EXISTS add_to_hospital
-                AFTER INSERT ON NurseSchedule 
-                FOR EACH ROW   
-	            WHEN (SELECT COUNT(schedule_id) from Hospital WHERE date = New.date  AND time = New.time  GROUP BY date, time) == 0 
-	                    BEGIN
-                                INSERT INTO Hospital (date, time) VALUES (NEW.date, NEW.time);
-                        END;
-
-            CREATE TRIGGER IF NOT EXISTS check_numberof_nurses_scheduled
-                AFTER INSERT ON NurseSchedule
+                FOREIGN KEY(email) REFERENCES Nurse(username) on delete cascade,
+                CHECK(numberof_patients_per_nurse<= 12)
+                );
+          
+            CREATE TRIGGER IF NOT EXISTS check_numberof_patients_scheduled
+                AFTER INSERT ON VaccineSchedule
             BEGIN
                 SELECT
                     CASE
-	                    WHEN (SELECT COUNT(EmployeeID) from NurseSchedule WHERE New.date = date AND New.time = time GROUP BY date, time) == 12 THEN
-   	                        RAISE (ABORT,'12 Nurse Scheduled for this time slot')
+	                    WHEN (SELECT SUM(numberof_patients_per_nurse) from NurseSchedule WHERE New.date = date AND New.time = time) == 100 THEN
+   	                        RAISE (ABORT,'100 patients for this time slot')
                     END;
             END;
             CREATE TRIGGER IF NOT EXISTS check_nurses_email
