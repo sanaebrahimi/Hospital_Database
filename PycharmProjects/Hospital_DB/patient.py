@@ -135,7 +135,7 @@ class Patient():
         user = [" " for i in range(12)]
 
         ttk.Button(inner_frame, text='Register', width=18, command = lambda: self.enter_info(user)).grid(row=4, column=0)  # command=self.login
-        ttk.Button(inner_frame, text='Update Information', width=18, command = lambda: self.update_info(user) ).grid(row=5, column=0) #command=self.signup
+        ttk.Button(inner_frame, text='Update Information', width=18, command = lambda: self.update_info(user)).grid(row=5, column=0) #command=self.signup
         ttk.Button(inner_frame, text='Schedule Appointment', width=18, command = lambda: self.scheduling()).grid(row=6, column=0)  #command=self.signup
         ttk.Button(inner_frame, text='Cancel Appointment', width=18).grid(row=7, column=0) # command=self.signup
         ttk.Button(inner_frame, text='View Information', width=18, command = lambda: self.view_schedule()).grid(row=7, column=0)
@@ -145,11 +145,8 @@ class Patient():
     def update_info(self, user):
 
         user_exists = self.exist()
-        print(user_exists)
         if len(user_exists) > 0:
             user = user_exists.pop()
-        # else:
-        #     user = [" " for i in range(12)]
         self.enter_info(user = user, update=True)
 
 

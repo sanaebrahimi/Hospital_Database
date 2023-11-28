@@ -21,7 +21,7 @@ class DataBaseManagement:
         self.cur = self.conn.cursor()
 
         self.cur.executescript("""
-            drop table VaccineSchedule;
+            
             CREATE TABLE IF NOT EXISTS LogIn(
                 user_id INTEGER,
                 email_address TEXT NOT NULL,
@@ -64,7 +64,8 @@ class DataBaseManagement:
                 VaccName text primary key,
                 Available_Dose integer,
                 OnHold_Dose integer,
-                CompanyName REFERENCES Company(name) on delete cascade     
+                CompanyName text,
+                FOREIGN KEY(CompanyName) REFERENCES Company(name) on delete cascade     
             );
 
             CREATE TABLE IF NOT EXISTS Company(
@@ -75,6 +76,7 @@ class DataBaseManagement:
             
             CREATE TABLE IF NOT EXISTS VaccineSchedule(
                 appointment_id integer primary key AUTOINCREMENT,
+                vax_status NVARCHAR(3) default "F",
                 schedule_id integer,
                 registration_id NVARCHAR(320),
                 NursePractioner integer,
@@ -99,6 +101,22 @@ class DataBaseManagement:
                 FOREIGN KEY(email) REFERENCES Nurse(username) on delete cascade,
                 CHECK(numberof_patients_per_nurse<= 12)
                 );
+                
+            CREATE TABLE IF NOT EXISTS VaccineRecord(
+                record_id integer primary key AUTOINCREMENT,
+                appointment_id integer,
+                registration_id NVARCHAR(320),
+                vaccine_name text,
+                nurse_id integer,
+                patient_fname text,
+                patient_lname text,
+                date text NOT NULL,
+                time text NOT NULL,
+                FOREIGN KEY(nurse_id) REFERENCES Nurse(EmployeeID) on delete cascade,
+                FOREIGN KEY(vaccine_name) REFERENCES Vaccine(VaccName) on delete cascade,
+                FOREIGN KEY(registration_id) REFERENCES Patient(RegistrationID) on delete cascade,
+                FOREIGN KEY(appointment_id) REFERENCES VaccineSchedule(appointment_id) on delete cascade         
+            );
           
             CREATE TRIGGER IF NOT EXISTS check_numberof_patients_scheduled
                 AFTER INSERT ON VaccineSchedule

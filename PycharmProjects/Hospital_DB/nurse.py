@@ -109,7 +109,6 @@ class Nurse():
         if count[0][0] == 0:
             my_db.insert(f"""INSERT INTO Hospital (date, time) VALUES ("{date}", "{time_slot}")""")
 
-        print(count)
         self.inner_frame.destroy()
         return
 

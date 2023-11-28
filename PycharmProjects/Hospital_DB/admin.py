@@ -26,9 +26,9 @@ class Admin():
         ttk.Button(self.inner_frame, text='Register Employee', width=18, command= lambda: self.register_nurse(user)).grid(row=4, column=0)  # command=self.login
         ttk.Button(self.inner_frame, text='Delete Employee', width=18, command = lambda: self.delete_nurse()).grid(row=5, column=0)
         ttk.Button(self.inner_frame, text='Edit Employee Information', width=18, command = lambda: self.update_info()).grid(row=6, column=0)
-        ttk.Button(self.inner_frame, text='Add Vaccine', width=18).grid(row=4, column=1)  # command=self.signup
-        ttk.Button(self.inner_frame, text='Update Vaccine', width=18).grid(row=7, column=1)  # command=self.signup
-        ttk.Button(self.inner_frame, text='View Patient', width=18).grid(row=5, column=1)  # command=self.signup
+        ttk.Button(self.inner_frame, text='Add Vaccine', width=18, command = lambda: self.add_vaccine([" ", " ", " ", " "])).grid(row=4, column=1)  # command=self.signup
+        ttk.Button(self.inner_frame, text='Update Vaccine', width=18, command = lambda: self.update_vaccine()).grid(row=7, column=1)  # command=self.signup
+        ttk.Button(self.inner_frame, text='View Patient', width=18, command = lambda: self.view_patients()).grid(row=5, column=1)  # command=self.signup
         ttk.Button(self.inner_frame, text='View Nurse', width=18, command = lambda: self.view_nurses()).grid(row=6, column=1)
 
         for widget in self.inner_frame.children.values():
@@ -149,7 +149,8 @@ class Admin():
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
 
-        # self.inner_frame.destroy()
+
+
     def view_nurse_schedules(self, nurse):
         self.inner_frame.destroy()
 
@@ -167,9 +168,10 @@ class Admin():
                 r += 1
 
         ttk.Button(self.inner_frame, text="Back",
-                   width=18, command=lambda : self.view_nurses()).grid(row=r+1, column=0)
+                   width=18, command=lambda : self.inner_frame.destroy()).grid(row=r+1, column=0)
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
+
 
         # self.inner_frame.destroy()
 
@@ -189,7 +191,7 @@ class Admin():
             r += 1
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
-        return
+
     def delete_employee(self, employee):
         self.inner_frame.destroy()
         my_db.show(f""" Delete from Nurse WHERE EmployeeID = "{employee[0]}" and username = "{employee[1]}" """)
@@ -197,7 +199,148 @@ class Admin():
         #
         self.delete_nurse()
         self.inner_frame.destroy()
+        return
 
+    def view_patients_schedules(self, patient):
+        self.inner_frame.destroy()
+
+        patient_schedule = my_db.show(f""" SELECT * from VaccineSchedule Where registration_id = "{patient[1]}" """)
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        print(patient_schedule)
+
+        ttk.Label(self.inner_frame, text=patient[2] + " " + patient[3]).grid(row=1, column=0, sticky='w')
+        ttk.Label(self.inner_frame, text=patient[1]).grid(row=1, column=1, sticky='w')
+        ttk.Label(self.inner_frame, text= "Schedule: ").grid(row=2, column=0, sticky='w')
+        r  = 4
+        if len(patient_schedule) > 0:
+            for time_schedule in patient_schedule:
+                string = "Vaccine: " +  time_schedule[5] + "- Date & Time: " + time_schedule[3] + " " + time_schedule[4]
+                ttk.Label(self.inner_frame, text= string ).grid(row=r, column=0, sticky='w')
+                r += 1
+
+        ttk.Button(self.inner_frame, text="Back",
+                   width=18, command=lambda : self.inner_frame.destroy()).grid(row=r+1, column=0)
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+
+    def view_patients(self):
+
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        patients = my_db.show(f""" SELECT * from Patient""")
+        print(patients)
+        r = 2
+        for i in range(len(patients)): #nurse in nurses:
+            ttk.Button(self.inner_frame, text=str(patients[i][1])+"-"+" " + patients[i][3] +" " + patients[i][4], width=18, command = lambda i=i: self.view_patients_schedules([patients[i][1],patients[i][2], patients[i][3], patients[i][4]])).grid(row=r, column=0)
+            r += 1
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+
+    def save_vaccine(self):
+        query = my_db.show(f"""SELECT * from Vaccine where VaccName = "{self.vax_name.get().strip()}" """)
+        if len(query) > 0:
+            print(query)
+            query = query.pop()
+            my_db.insert(f"""Update Vaccine
+                                    SET 
+                                    Available_Dose = Available_Dose + "{self.vax_available_dose.get()}" , 
+                                    OnHold_Dose = OnHold_Dose + "{self.vax_onhold.get()}"  
+                                    where  
+                                    VaccName = "{self.vax_name.get().strip()}" ;""")
+
+        else:
+            my_db.insert(f""" INSERT INTO Vaccine(VaccName, Available_Dose, OnHold_Dose, CompanyName) VALUES\
+                            ("{self.vax_name.get().strip()}", "{self.vax_available_dose.get().strip()}", "{self.vax_onhold.get().strip()}", "{self.company_name.get().strip()}")""")
+
+        self.inner_frame.destroy()
+        print(my_db.show(f"""SELECT * from Vaccine"""))
+        return
+
+    def add_vaccine(self, vacc):
+        # VaccName
+        # Available_Dose
+        # OnHold_Dose
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        # vacc = [" ", " ", " ", " "]
+
+        self.vax_name = tk.StringVar()
+        ttk.Label(self.inner_frame, text='Vaccine Name').grid(row=0, column=0, sticky='w')
+        box5 = ttk.Entry(self.inner_frame, textvariable=self.vax_name)
+        box5.grid(row=1, column=0)
+        box5.insert(0, vacc[0])
+
+        self.vax_available_dose = tk.StringVar()
+        ttk.Label(self.inner_frame, text='Vaccine Available dose').grid(row=0, column=1, sticky='w')
+        box5 = ttk.Entry(self.inner_frame, textvariable=self.vax_available_dose)
+        box5.grid(row=1, column=1)
+        box5.insert(0, vacc[1])
+
+
+        self.vax_onhold = tk.StringVar()
+        ttk.Label(self.inner_frame, text='Vaccine OnHold dose').grid(row=0, column=2, sticky='w')
+        box6 = ttk.Entry(self.inner_frame, textvariable=self.vax_onhold)
+        box6.grid(row= 1, column=2)
+        box6.insert(0, vacc[2])
+
+        self.company_name= tk.StringVar()
+        ttk.Label(self.inner_frame, text='Company').grid(row=0, column=3, sticky='w')
+        box7 = ttk.Entry(self.inner_frame, textvariable=self.company_name)
+        box7.grid(row=1, column=3)
+        box7.insert(0, vacc[3])
+
+        ttk.Button(self.inner_frame, text="Save",
+                   width=18, command=lambda: self.save_vaccine()).grid(row= 14, column=0)
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+    def update_vax_info(self,selected):
+        print(selected)
+        self.inner_frame.destroy()
+        self.add_vaccine(selected[1:])
+    def update_vaccine(self):
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        vaccines = my_db.show(f""" SELECT * from Vaccine""")
+        print('HERE',vaccines)
+        options = tuple()
+        print(vaccines)
+        if len(vaccines) > 0:
+
+            label = tk.Label(self.inner_frame, text="Vaccines", font=("Arial", 30)).grid(row=0, columnspan=3)
+            # create Treeview with 3 columns
+            cols = ('Name', 'Available Dose', 'Dose OnHold', 'Company')
+            listBox = ttk.Treeview(self.inner_frame, columns=cols, show='headings')
+
+            # set column headings
+            for col in cols:
+                listBox.heading(col, text=col)
+            listBox.grid(row=1, column=0, columnspan=2)
+            for i, (name, av_dose, hold_dose,company) in enumerate(vaccines, start=1):
+                listBox.insert("", "end", values=(i, name, av_dose, hold_dose,company))
+            # tree = event.widget
+            # curItem =
+
+
+            def _element(event):
+
+                tree = event.widget
+                for item in tree.selection():
+                    print(tree.item(item))
+                selection = tree.item(item)["values"]
+                showScores = tk.Button(self.inner_frame, text="Update", width=15,
+                                       command=lambda: self.update_vax_info(selection)).grid(row=4, column=0)
+                return selection
+
+
+            listBox.bind("<<TreeviewSelect>>", _element)
+
+
+            for widget in self.inner_frame.children.values():
+                widget.grid_configure(padx=50, pady=5)
 
 
 
