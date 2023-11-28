@@ -133,12 +133,16 @@ class Patient():
         inner_frame = tk.LabelFrame(self.master)
         inner_frame.pack(padx=10, pady=10)
         user = [" " for i in range(12)]
-
+        record_check = my_db.show(f"""SELECT * from VaccineRecord WHERE registration_id = "{self.reg_id}" """)
+        if len(record_check) > 0:
+            record = record_check
+            ttk.Button(inner_frame, text='Vaccination Record', width=18, command=lambda: self.view_record(record)).grid(row=9,
+                                                                                                                  column=0)
         ttk.Button(inner_frame, text='Register', width=18, command = lambda: self.enter_info(user)).grid(row=4, column=0)  # command=self.login
         ttk.Button(inner_frame, text='Update Information', width=18, command = lambda: self.update_info(user)).grid(row=5, column=0) #command=self.signup
         ttk.Button(inner_frame, text='Schedule Appointment', width=18, command = lambda: self.scheduling()).grid(row=6, column=0)  #command=self.signup
-        ttk.Button(inner_frame, text='Cancel Appointment', width=18).grid(row=7, column=0) # command=self.signup
-        ttk.Button(inner_frame, text='View Information', width=18, command = lambda: self.view_schedule()).grid(row=7, column=0)
+        ttk.Button(inner_frame, text='Cancel Appointment', width=18, command= lambda: self.cancel_appointment()).grid(row=7, column=0) # command=self.signup
+        ttk.Button(inner_frame, text='View Information', width=18, command = lambda: self.view_schedule()).grid(row=8, column=0)
         for widget in inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
 
@@ -153,7 +157,11 @@ class Patient():
     def select_nurse(self, details, vaccine):
 
         number_check = my_db.show(f"""Select numberof_patients_per_nurse from NurseSchedule where id = {details[4]}""").pop()[0]
-        vaccine_availability = my_db.show(f"""Select Available_Dose from Vaccine where VaccName = {vaccine}""").pop()[0]
+        vaccine_availability = my_db.show(f"""Select Available_Dose from Vaccine where VaccName = "{vaccine}" """)
+        if len(vaccine_availability) ==0:
+            messagebox.showerror(message="Your selected Vaccine is not available!")
+            return
+        vaccine_availability = vaccine_availability.pop()[0]
         if number_check < 12 and vaccine_availability > 0:
             my_db.insert(
                 f""" INSERT INTO VaccineSchedule(schedule_id, registration_id, vaccine_name, NursePractioner, date, time)VALUES \
@@ -167,8 +175,8 @@ class Patient():
                                         SET 
                                         OnHold_Dose = OnHold_Dose + 1
                                         WHERE 
-                                        VaccName = {vaccine} """)
-        elif vaccine_availability  == 0:
+                                        VaccName = "{vaccine}" """)
+        elif vaccine_availability  == 0 :
             messagebox.showerror(message="Your selected Vaccine is not available!")
             return
         elif number_check == 12 :
@@ -237,11 +245,87 @@ class Patient():
             messagebox.showerror(message="Nothing scheduled yet!")
         else:
             for time_schedule in patient_schedule:
-                ttk.Label(self.inner_frame, text=time_schedule[5] + " " + time_schedule[6] + "- Vaccine: " + time_schedule[4]).grid(row=r, column=0,                                                                                             sticky='w')
+                ttk.Label(self.inner_frame, text=time_schedule[6] + " " + time_schedule[7] + "- Vaccine: " + time_schedule[5]).grid(row=r, column=0,                                                                                             sticky='w')
                 r += 1
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
         return
+
+    def view_record(self, records):
+
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+
+        tk.Label(self.inner_frame, text="Vaccine Record", font=("Arial", 30)).grid(row=0, columnspan=3)
+
+        cols = ('ID', 'First Name', 'Last Name', 'Vaccine Name', 'Date', 'Time','Nurse')
+        tree = ttk.Treeview(self.inner_frame, columns=cols, show='headings')
+
+        for col in cols:
+            tree.heading(col, text=col)
+        for record in records:
+            fname, lname = my_db.show(
+                f"""SELECT FirstName, LastName from Patient WHERE RegistrationID = "{record[2]}" """).pop()
+            fnurse, lnurse = my_db.show(f"SELECT FirstName, LastName from Nurse WHERE EmployeeID = {record[4]}").pop()
+            tree.grid(row=1, column=0, columnspan=2)
+            vax = (record[0], fname, lname, record[3], record[5], record[6], fnurse+ " " + lnurse)
+            tree.insert("", "end", values=vax)
+
+
+        tk.Button(self.inner_frame, text="Back", width=15,
+                          command=lambda: self.inner_frame.destroy()).grid(row=4, column=0)
+
+
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
+    def delete_appointment(self, info):
+        print(my_db.show(f"""select * from NurseSchedule"""))
+        print(my_db.show(f"""select * from Vaccine"""))
+        my_db.insert(f"""DELETE from VaccineSchedule WHERE appointment_id = {info[0]}""")
+        my_db.insert(f"""UPDATE Vaccine
+                        SET OnHold_Dose = OnHold_Dose-1,
+                            Available_Dose = Available_Dose+1 
+                        WHERE VaccName = "{info[2]}" """)
+        my_db.insert(f"""UPDATE NurseSchedule
+                                SET numberof_patients_per_nurse = numberof_patients_per_nurse-1
+                                WHERE id= {info[1]}""")
+        print(my_db.show(f"""select * from NurseSchedule"""))
+        print(my_db.show(f"""select * from Vaccine"""))
+        self.inner_frame.destroy()
+        return
+    def cancel_appointment(self):
+        self.inner_frame = tk.LabelFrame(self.master)
+        self.inner_frame.pack(padx=10, pady=10)
+        appointments = my_db.show(f"""SELECT * from VaccineSchedule WHERE registration_id = "{self.reg_id}" AND vax_status ="F" """)
+        print(appointments)
+        if len(appointments) == 0:
+            messagebox.showerror(message="Nothing to Cancel!")
+            return
+        tk.Label(self.inner_frame, text="Appointment", font=("Arial", 30)).grid(row=0, columnspan=3)
+
+        cols = ('ID', 'Schedule ID','Vaccine Name', 'Date', 'Time')
+        tree = ttk.Treeview(self.inner_frame, columns=cols, show='headings')
+
+        for col in cols:
+            tree.heading(col, text=col)
+        for record in appointments:
+            tree.grid(row=1, column=0, columnspan=2)
+            vax = (record[0], record[2], record[5], record[6], record[7])
+            tree.insert("", "end", values=vax)
+
+        def _element(event):
+            tree = event.widget
+            for item in tree.selection():
+                print(tree.item(item))
+                values = tree.item(item)["values"]
+                tk.Button(self.inner_frame, text="Cancel Appointment", width=15,
+                          command=lambda: self.delete_appointment(values)).grid(row=4, column=0)
+
+        tree.bind("<<TreeviewSelect>>", _element)
+        for widget in self.inner_frame.children.values():
+            widget.grid_configure(padx=50, pady=5)
+
     def exist(self):
         user = my_db.show(f""" SELECT * FROM Patient WHERE username ="{self.reg_id}" or RegistrationID = "{self.reg_id}" """)
         print(my_db.show(f""" SELECT * FROM Patient"""))

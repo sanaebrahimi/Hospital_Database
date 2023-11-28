@@ -108,8 +108,6 @@ class DataBaseManagement:
                 registration_id NVARCHAR(320),
                 vaccine_name text,
                 nurse_id integer,
-                patient_fname text,
-                patient_lname text,
                 date text NOT NULL,
                 time text NOT NULL,
                 FOREIGN KEY(nurse_id) REFERENCES Nurse(EmployeeID) on delete cascade,
@@ -117,6 +115,15 @@ class DataBaseManagement:
                 FOREIGN KEY(registration_id) REFERENCES Patient(RegistrationID) on delete cascade,
                 FOREIGN KEY(appointment_id) REFERENCES VaccineSchedule(appointment_id) on delete cascade         
             );
+            CREATE TRIGGER IF NOT EXISTS after_vaccination
+            AFTER UPDATE
+            ON VaccineSchedule FOR EACH ROW
+            WHEN NEW.vax_status = "T"
+            BEGIN 
+                INSERT INTO VaccineRecord(appointment_id, registration_id, vaccine_name, nurse_id, date, time)
+                VALUES(OLD.appointment_id, OLD.registration_id, OLD.vaccine_name, OLD.NursePractioner, OLD.date , OLD.time);
+                
+            END;
           
             CREATE TRIGGER IF NOT EXISTS check_numberof_patients_scheduled
                 AFTER INSERT ON VaccineSchedule
@@ -126,6 +133,20 @@ class DataBaseManagement:
 	                    WHEN (SELECT SUM(numberof_patients_per_nurse) from NurseSchedule WHERE New.date = date AND New.time = time) == 100 THEN
    	                        RAISE (ABORT,'100 patients for this time slot')
                     END;
+            END;
+            CREATE TRIGGER IF NOT EXISTS check_login_email
+            BEFORE INSERT ON LogIn 
+            BEGIN
+            SELECT CASE 
+            WHEN 
+                (NEW.email_address IN
+                (SELECT
+                    LogIn.email_address from LogIn
+                    WHERE 
+                    NEW.email_address = LogIn.email_address))
+                    THEN
+   	                RAISE (ABORT,'This email already exists!')
+   	                END;          
             END;
             CREATE TRIGGER IF NOT EXISTS check_nurses_email
             BEFORE INSERT ON Nurse 
@@ -141,9 +162,17 @@ class DataBaseManagement:
    	                RAISE (ABORT,'This email already exists!')
    	                END;          
             END;
-
-
-
+            CREATE TRIGGER IF NOT EXISTS decrement_onhold_avialable_vaccine
+                AFTER INSERT ON VaccineRecord
+            BEGIN
+                UPDATE Vaccine
+                SET Available_Dose = Available_Dose - 1,
+                OnHold_Dose = OnHold_Dose -1
+                WHERE
+                VaccName = NEW.vaccine_name;
+            END;
+            
+            
         """)
 
     # insert into query
