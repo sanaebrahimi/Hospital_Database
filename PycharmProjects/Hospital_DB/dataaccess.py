@@ -2,7 +2,14 @@ import sqlite3
 
 
 # DataBaseManagement class to insert queries into and select from database
-
+# CREATE TABLE IF NOT EXISTS Hospital(
+#
+#                 schedule_id integer primary key AUTOINCREMENT,
+#                 numberof_patients_per_slot integer DEFAULT 0 NOT NULL,
+#                 date text,
+#                 time text
+#
+#             );
 # drop table NurseSchedule;
               # drop table Nurse;
               # drop table Hospital;
@@ -65,14 +72,7 @@ class DataBaseManagement:
                 name text primary key,
                 products text
             );
-            CREATE TABLE IF NOT EXISTS Hospital(
-
-                schedule_id integer primary key AUTOINCREMENT,
-                numberof_patients_per_slot integer DEFAULT 0 NOT NULL,
-                date text,
-                time text
-
-            );
+            
             CREATE TABLE IF NOT EXISTS VaccineSchedule(
                 appointment_id integer primary key AUTOINCREMENT,
                 schedule_id integer,
