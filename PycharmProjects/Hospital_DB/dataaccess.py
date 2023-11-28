@@ -171,6 +171,11 @@ class DataBaseManagement:
                 WHERE
                 VaccName = NEW.vaccine_name;
             END;
+            CREATE TRIGGER IF NOT EXISTS delete_from_vaccineschedule
+                AFTER INSERT ON VaccineRecord
+            BEGIN
+                DELETE FROM VaccineSchedule WHERE appointment_id = NEW.appointment_id;
+            END;
             
             
         """)

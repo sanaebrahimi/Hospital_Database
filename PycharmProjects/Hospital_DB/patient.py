@@ -243,10 +243,13 @@ class Patient():
         r = 4
         if len(patient_schedule) == 0:
             messagebox.showerror(message="Nothing scheduled yet!")
+            return
         else:
             for time_schedule in patient_schedule:
                 ttk.Label(self.inner_frame, text=time_schedule[6] + " " + time_schedule[7] + "- Vaccine: " + time_schedule[5]).grid(row=r, column=0,                                                                                             sticky='w')
                 r += 1
+        tk.Button(self.inner_frame, text="Back", width=15,
+                  command=lambda: self.inner_frame.destroy()).grid(row=r+1, column=0)
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
         return
@@ -272,7 +275,7 @@ class Patient():
             tree.insert("", "end", values=vax)
 
 
-        tk.Button(self.inner_frame, text="Back", width=15,
+        tk.Button(self.inner_frame, text="Back", width=10,
                           command=lambda: self.inner_frame.destroy()).grid(row=4, column=0)
 
 
@@ -280,7 +283,7 @@ class Patient():
             widget.grid_configure(padx=50, pady=5)
 
     def delete_appointment(self, info):
-        print(my_db.show(f"""select * from NurseSchedule"""))
+        print('Here',my_db.show(f"""select * from VaccineSchedule"""))
         print(my_db.show(f"""select * from Vaccine"""))
         my_db.insert(f"""DELETE from VaccineSchedule WHERE appointment_id = {info[0]}""")
         my_db.insert(f"""UPDATE Vaccine
@@ -290,7 +293,7 @@ class Patient():
         my_db.insert(f"""UPDATE NurseSchedule
                                 SET numberof_patients_per_nurse = numberof_patients_per_nurse-1
                                 WHERE id= {info[1]}""")
-        print(my_db.show(f"""select * from NurseSchedule"""))
+        print('Here',my_db.show(f"""select * from VaccineSchedule"""))
         print(my_db.show(f"""select * from Vaccine"""))
         self.inner_frame.destroy()
         return

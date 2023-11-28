@@ -42,12 +42,64 @@ class Nurse():
         ttk.Button(self.inner_frame, text='View Timeslots', width=18, command=lambda: self.view_timeslots(nurse[0])).grid(row=7, column=0)
         ttk.Button(self.inner_frame, text='View Patients', width=18,
                    command=lambda: self.view_patients_perslot(nurse[0])).grid(row=8, column=0)
+        ttk.Button(self.inner_frame, text='Change Password', width=18,
+                   command=lambda: self.change_password()).grid(row=9, column=0)
 
         for widget in self.inner_frame.children.values():
             widget.grid_configure(padx=50, pady=5)
         
         self.lower_frame = tk.LabelFrame(self.frame)
         self.lower_frame.grid(row=1, column=0)
+
+    def submit(self):
+        user = hospitallogic.get_user(self.email.get(), "Nurse")
+
+        if len(user) > 0:
+            login_status = bcrypt.checkpw(self.password.get().encode('utf-8'), user[0][2].encode('utf-8'))
+            print('Here', login_status)
+            if login_status:
+                self.lower_frame.destroy()
+                self.lower_frame = tk.LabelFrame(self.frame)
+                self.lower_frame.grid(row=1, column=0)
+                self.password = tk.StringVar()
+                ttk.Label(self.lower_frame, text="New Password").grid(row=2, column=0, sticky='w')
+                box2 = ttk.Entry(self.lower_frame, textvariable=self.password)
+                box2.grid(row=3, column=0)
+
+                def save():
+                    my_db.insert(f"""DELETE from LogIn where email_address = "{self.email.get()}" """)
+                    new_user = hospitallogic.User(self.email.get(), self.password.get(), "Nurse")
+                    new_user.insert()
+                    self.lower_frame.destroy()
+
+                ttk.Button(self.lower_frame, text="Save", width=25,
+                           command=lambda: save()).grid(row=4, column=0)
+
+                # return
+        else:
+            messagebox.showerror(message="Email or Password does not match!")
+        # self.lower_frame.destroy()
+        return
+    def change_password(self):
+        self.lower_frame.destroy()
+        self.lower_frame = tk.LabelFrame(self.frame)
+        self.lower_frame.grid(row=1, column=0)
+        # nurse_info = my_db.show(f"""select Phone, Address from Nurse WHERE EmployeeID ={emp_id}""").pop()
+        self.email= tk.StringVar()
+        ttk.Label(self.lower_frame, text='Email').grid(row=0, column=0, sticky='w')
+        box1 = ttk.Entry(self.lower_frame, textvariable= self.email)
+        box1.grid(row=1, column=0)
+
+        self.password = tk.StringVar()
+        ttk.Label(self.lower_frame, text="Password").grid(row=2, column=0, sticky='w')
+        box2 = ttk.Entry(self.lower_frame, textvariable= self.password)
+        box2.grid(row=3, column=0)
+        login_status = False
+        ttk.Button(self.lower_frame, text="Submit", width=25,
+                   command=lambda: self.submit()).grid(row=4, column=0)
+
+
+
 
     def enter_info(self, emp_id):
         self.lower_frame.destroy()
