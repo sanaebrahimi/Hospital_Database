@@ -27,7 +27,7 @@ class DataBaseManagement:
                 email_address TEXT NOT NULL,
                 password TEXT NOT NULL,
                 user_type TEXT NOT NULL,
-                PRIMARY KEY(user_id, email_address)
+                PRIMARY KEY(user_id)
             );
 
             CREATE TABLE IF NOT EXISTS Patient(
