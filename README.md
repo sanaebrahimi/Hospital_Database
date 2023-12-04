@@ -1,1 +1,1 @@
-# LSH-LargeScaleDL
+# 3 tier database for a vaccination clinic
